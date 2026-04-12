@@ -30,6 +30,9 @@
                     <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95">
                         Agregar a la lista
                     </button>
+                    <button id="btnCancelarEdicion" class="hidden w-full mt-2 text-gray-500 text-sm font-semibold py-1">
+                        Cancelar edición
+                    </button>
                 </div>
                 <div id="listaContenedor" class="space-y-3"></div>
             </div>
@@ -53,7 +56,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
@@ -69,6 +72,9 @@
         const db = getFirestore(app);
         const colLista = collection(db, "lista_actual");
         const colHistorial = collection(db, "historial");
+
+        // Estado de edición
+        let idEdicion = null;
 
         window.cambiarTab = (tab) => {
             const secLista = document.getElementById('seccionLista');
@@ -89,19 +95,32 @@
             document.getElementById('nombre').value = '';
             document.getElementById('precio').value = '';
             document.getElementById('piezas').value = '';
+            idEdicion = null;
+            document.getElementById('btnAgregar').innerText = "Agregar a la lista";
+            document.getElementById('btnAgregar').classList.replace('bg-orange-500', 'bg-blue-600');
+            document.getElementById('btnCancelarEdicion').classList.add('hidden');
             document.getElementById('nombre').focus();
         };
 
-        // --- AGREGAR ITEM A LISTA ACTUAL ---
+        // --- BOTÓN AGREGAR / ACTUALIZAR ---
         document.getElementById('btnAgregar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const precio = parseFloat(document.getElementById('precio').value);
             const piezas = parseInt(document.getElementById('piezas').value);
+
             if(nombre && !isNaN(precio) && !isNaN(piezas)) {
-                await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
+                if(idEdicion) {
+                    // MODO EDICIÓN
+                    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas });
+                } else {
+                    // MODO NUEVO
+                    await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
+                }
                 limpiarInputs();
             }
         });
+
+        document.getElementById('btnCancelarEdicion').addEventListener('click', limpiarInputs);
 
         // --- ESCUCHAR LISTA ACTUAL ---
         onSnapshot(colLista, (snapshot) => {
@@ -113,14 +132,31 @@
                 const subtotal = item.precio * item.piezas;
                 total += subtotal;
                 contenedor.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
-                        <div><p class="font-bold uppercase text-xs">${item.nombre}</p><p class="text-[10px] text-gray-400">${item.piezas} pzas x $${item.precio}</p></div>
-                        <div class="flex items-center gap-4"><span class="font-black text-lg">$${subtotal.toFixed(2)}</span>
-                        <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-500 p-2 text-xl">🗑️</button></div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center animate-fade-in">
+                        <div class="cursor-pointer flex-1" onclick="prepararEdicion('${itemDoc.id}', '${item.nombre}', ${item.precio}, ${item.piezas})">
+                            <p class="font-bold uppercase text-xs">${item.nombre} <span class="text-blue-400 text-[9px]">(Toca para editar)</span></p>
+                            <p class="text-[10px] text-gray-400">${item.piezas} pzas x $${item.precio}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-black text-lg">$${subtotal.toFixed(2)}</span>
+                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-500 p-2 text-xl">🗑️</button>
+                        </div>
                     </div>`;
             });
             document.getElementById('totalCuenta').innerText = `$${total.toFixed(2)}`;
         });
+
+        // --- PREPARAR EDICIÓN ---
+        window.prepararEdicion = (id, nombre, precio, piezas) => {
+            idEdicion = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('precio').value = precio;
+            document.getElementById('piezas').value = piezas;
+            document.getElementById('btnAgregar').innerText = "Actualizar Producto";
+            document.getElementById('btnAgregar').classList.replace('bg-blue-600', 'bg-orange-500');
+            document.getElementById('btnCancelarEdicion').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
 
         window.eliminarItem = async (id) => { 
             if(confirm('¿Eliminar producto de la lista?')) {
@@ -142,28 +178,20 @@
                                 <span class="text-[9px] font-black text-gray-300 uppercase leading-none">${c.fecha}</span>
                                 <div class="text-xl font-black text-blue-600">$${c.total.toFixed(2)}</div>
                             </div>
-                            <button onclick="eliminarHistorial('${docSnap.id}')" class="text-red-400 hover:text-red-600 p-1">
-                                🗑️
-                            </button>
+                            <button onclick="eliminarHistorial('${docSnap.id}')" class="text-red-400 hover:text-red-600 p-1">🗑️</button>
                         </div>
                         <details class="text-[11px] text-gray-500">
                             <summary class="cursor-pointer text-blue-400 font-bold">Ver productos</summary>
-                            <ul class="mt-2 space-y-1 bg-gray-50 p-2 rounded-lg">
-                                ${c.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
-                            </ul>
+                            <ul class="mt-2 space-y-1 bg-gray-50 p-2 rounded-lg">${c.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}</ul>
                         </details>
                     </div>`;
             });
         });
 
-        // --- NUEVA FUNCIÓN: ELIMINAR DEL HISTORIAL ---
         window.eliminarHistorial = async (id) => {
-            if(confirm('¿Estás seguro de que quieres eliminar esta compra del historial?')) {
-                await deleteDoc(doc(db, "historial", id));
-            }
+            if(confirm('¿Eliminar compra del historial?')) await deleteDoc(doc(db, "historial", id));
         };
 
-        // --- GUARDAR COMPRA EN HISTORIAL ---
         document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
             const snap = await getDocs(colLista);
             if(snap.empty) return;
