@@ -5,69 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Súper Familiar</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: bold; }
+    </style>
 </head>
 <body class="bg-gray-100 pb-24">
-    <div class="max-w-md mx-auto p-4">
-        <h1 class="text-2xl font-bold text-center mb-6">🛒 Lista del Súper</h1>
-
-        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-            <input id="nombre" type="text" placeholder="Producto" class="w-full mb-2 p-2 border rounded">
-            <div class="flex gap-2">
-                <input id="precio" type="number" placeholder="$ Precio" class="w-1/2 p-2 border rounded">
-                <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-2 border rounded">
-            </div>
-            <button id="btnAgregar" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg">Agregar Item</button>
+    <div class="max-w-md mx-auto">
+        <div class="flex bg-white shadow-sm sticky top-0 z-10">
+            <button id="tabLista" class="flex-1 py-4 text-center tab-active" onclick="cambiarTab('lista')">Lista Actual</button>
+            <button id="tabHistorial" class="flex-1 py-4 text-center text-gray-500" onclick="cambiarTab('historial')">Historial</button>
         </div>
 
-        <div id="listaContenedor" class="space-y-3">
+        <div class="p-4">
+            <div id="seccionLista">
+                <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">🛒 Mi Carrito</h1>
+                
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <input id="nombre" type="text" placeholder="Producto" class="w-full mb-2 p-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
+                    <div class="flex gap-2">
+                        <input id="precio" type="number" placeholder="$ Precio" class="w-1/2 p-2 border rounded">
+                        <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-2 border rounded">
+                    </div>
+                    <button id="btnAgregar" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors">
+                        Agregar a la lista
+                    </button>
+                </div>
+
+                <div id="listaContenedor" class="space-y-3">
+                    </div>
             </div>
+
+            <div id="seccionHistorial" class="hidden">
+                <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">📜 Compras Pasadas</h1>
+                <div id="historialContenedor" class="space-y-4">
+                    </div>
+            </div>
+        </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between items-center max-w-md mx-auto shadow-lg">
+    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between items-center max-w-md mx-auto shadow-lg">
         <div>
-            <p class="text-sm text-gray-500">Total estimado:</p>
-            <p class="text-xl font-bold text-green-600" id="totalCuenta">$0.00</p>
+            <p class="text-xs text-gray-500 uppercase font-semibold">Total estimado</p>
+            <p class="text-2xl font-bold text-green-600" id="totalCuenta">$0.00</p>
         </div>
-        <button id="btnGuardarCompra" class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold">
+        <button id="btnGuardarCompra" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-bold shadow-md transition-transform active:scale-95">
             Guardar Compra
         </button>
     </div>
 
     <script type="module">
-        // Importar Firebase (Sustituye con tu config)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
+        // CONFIGURACIÓN DE FIREBASE (Asegúrate de tener tus datos aquí)
         const firebaseConfig = {
-            apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
-            authDomain: "lista-de-super-30116.firebaseapp.com",
-            projectId: "lista-de-super-30116",
-            storageBucket: "lista-de-super-30116.firebasestorage.app",
-            messagingSenderId: "686745242098",
-            appId: "1:686745242098:web:a2612a5e2ea4f381e9836b",
-            measurementId: "G-FRYK1VCS83"
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_DOMINIO.firebaseapp.com",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const colRef = collection(db, "lista_actual");
+        const colLista = collection(db, "lista_actual");
+        const colHistorial = collection(db, "historial");
 
-        // --- LÓGICA DE AGREGAR ---
+        // --- NAVEGACIÓN ENTRE TABS ---
+        window.cambiarTab = (tab) => {
+            const secLista = document.getElementById('seccionLista');
+            const secHistorial = document.getElementById('seccionHistorial');
+            const barra = document.getElementById('barraInferior');
+            const btnL = document.getElementById('tabLista');
+            const btnH = document.getElementById('tabHistorial');
+
+            if(tab === 'lista') {
+                secLista.classList.remove('hidden');
+                secHistorial.classList.add('hidden');
+                barra.classList.remove('hidden');
+                btnL.classList.add('tab-active');
+                btnH.classList.remove('tab-active');
+            } else {
+                secLista.classList.add('hidden');
+                secHistorial.classList.remove('hidden');
+                barra.classList.add('hidden');
+                btnL.classList.remove('tab-active');
+                btnH.classList.add('tab-active');
+            }
+        };
+
+        // --- MANEJO DE LISTA ACTUAL ---
         document.getElementById('btnAgregar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const precio = parseFloat(document.getElementById('precio').value);
             const piezas = parseInt(document.getElementById('piezas').value);
 
-            if(nombre && precio && piezas) {
-                await addDoc(colRef, { nombre, precio, piezas, fecha: Date.now() });
+            if(nombre && !isNaN(precio) && !isNaN(piezas)) {
+                await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
                 document.getElementById('nombre').value = '';
                 document.getElementById('precio').value = '';
-                document.getElementById('piezas').value = '';
+                document.getElementById('piezas').value = '1';
             }
         });
 
-        // --- RENDERIZADO EN TIEMPO REAL ---
-        onSnapshot(colRef, (snapshot) => {
+        onSnapshot(colLista, (snapshot) => {
             let total = 0;
             const contenedor = document.getElementById('listaContenedor');
             contenedor.innerHTML = '';
@@ -78,14 +120,16 @@
                 total += subtotal;
 
                 contenedor.innerHTML += `
-                    <div class="bg-white p-3 rounded shadow flex justify-between items-center">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                         <div>
-                            <p class="font-bold">${item.nombre}</p>
-                            <p class="text-sm text-gray-600">${item.piezas} pzas x $${item.precio}</p>
+                            <p class="font-bold text-gray-800 uppercase text-sm">${item.nombre}</p>
+                            <p class="text-xs text-gray-500">${item.piezas} pzas x $${item.precio}</p>
                         </div>
                         <div class="flex items-center gap-4">
-                            <span class="font-bold">$${subtotal}</span>
-                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-500 font-bold">X</button>
+                            <span class="font-bold text-gray-700">$${subtotal.toFixed(2)}</span>
+                            <button onclick="eliminarItem('${itemDoc.id}')" class="bg-red-50 text-red-500 p-2 rounded-full hover:bg-red-100">
+                                🗑️
+                            </button>
                         </div>
                     </div>
                 `;
@@ -93,32 +137,70 @@
             document.getElementById('totalCuenta').innerText = `$${total.toFixed(2)}`;
         });
 
-        // Función para eliminar (se expone a window para el onclick del HTML)
         window.eliminarItem = async (id) => {
-            await deleteDoc(doc(db, "lista_actual", id));
+            if(confirm('¿Borrar este producto?')) {
+                await deleteDoc(doc(db, "lista_actual", id));
+            }
         };
 
-        // --- GUARDAR COMPRA (HISTORIAL) ---
+        // --- MANEJO DEL HISTORIAL ---
+        const qHistorial = query(colHistorial, orderBy("timestamp", "desc"));
+        onSnapshot(qHistorial, (snapshot) => {
+            const contenedorH = document.getElementById('historialContenedor');
+            contenedorH.innerHTML = '';
+
+            if(snapshot.empty) {
+                contenedorH.innerHTML = '<p class="text-center text-gray-400 mt-10">No hay compras guardadas aún.</p>';
+                return;
+            }
+
+            snapshot.docs.forEach(docSnap => {
+                const compra = docSnap.data();
+                contenedorH.innerHTML += `
+                    <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
+                        <div class="flex justify-between items-start mb-2 border-b pb-2">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-bold">Fecha</p>
+                                <p class="text-sm font-medium">${compra.fecha}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400 uppercase font-bold">Total Pagado</p>
+                                <p class="text-lg font-black text-blue-600">$${compra.total.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <details class="text-xs text-gray-600">
+                            <summary class="cursor-pointer text-blue-500 font-semibold">Ver detalle (${compra.detalles.length} productos)</summary>
+                            <ul class="mt-2 space-y-1">
+                                ${compra.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
+                            </ul>
+                        </details>
+                    </div>
+                `;
+            });
+        });
+
+        // --- GUARDAR COMPRA ---
         document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
-            const snapshot = await getDocs(colRef);
-            if(snapshot.empty) return alert("La lista está vacía");
+            const snapshot = await getDocs(colLista);
+            if(snapshot.empty) return alert("No hay productos para guardar.");
 
-            const items = snapshot.docs.map(d => d.data());
-            const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
+            if(confirm('¿Quieres finalizar la compra y guardarla en el historial?')) {
+                const items = snapshot.docs.map(d => d.data());
+                const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
 
-            // Guardar en historial
-            await addDoc(collection(db, "historial"), {
-                fecha: new Date().toLocaleString(),
-                total: total,
-                detalles: items
-            });
+                await addDoc(colHistorial, {
+                    fecha: new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' }),
+                    timestamp: Date.now(),
+                    total: total,
+                    detalles: items
+                });
 
-            // Limpiar lista actual tras guardar
-            snapshot.docs.forEach(async (d) => {
-                await deleteDoc(doc(db, "lista_actual", d.id));
-            });
+                // Borrar lista actual
+                const promesas = snapshot.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
+                await Promise.all(promesas);
 
-            alert("Compra guardada en el historial");
+                alert("¡Compra guardada con éxito!");
+            }
         });
     </script>
 </body>
