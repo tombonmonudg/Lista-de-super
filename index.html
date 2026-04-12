@@ -9,7 +9,7 @@
         .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: bold; }
     </style>
 </head>
-<body class="bg-gray-100 pb-24">
+<body class="bg-gray-100 pb-24 text-gray-800">
     <div class="max-w-md mx-auto">
         <div class="flex bg-white shadow-sm sticky top-0 z-10">
             <button id="tabLista" class="flex-1 py-4 text-center tab-active" onclick="cambiarTab('lista')">Lista Actual</button>
@@ -18,15 +18,15 @@
 
         <div class="p-4">
             <div id="seccionLista">
-                <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">🛒 Mi Carrito</h1>
+                <h1 class="text-2xl font-bold text-center mb-6">🛒 Mi Carrito</h1>
                 
                 <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                    <input id="nombre" type="text" placeholder="Producto" class="w-full mb-2 p-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
+                    <input id="nombre" type="text" placeholder="Nombre del producto" class="w-full mb-2 p-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
                     <div class="flex gap-2">
-                        <input id="precio" type="number" placeholder="$ Precio" class="w-1/2 p-2 border rounded">
-                        <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-2 border rounded">
+                        <input id="precio" type="number" placeholder="$ Precio unitario" class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
+                        <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <button id="btnAgregar" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors">
+                    <button id="btnAgregar" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition-all active:scale-95">
                         Agregar a la lista
                     </button>
                 </div>
@@ -36,19 +36,19 @@
             </div>
 
             <div id="seccionHistorial" class="hidden">
-                <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">📜 Compras Pasadas</h1>
+                <h1 class="text-2xl font-bold text-center mb-6">📜 Compras Pasadas</h1>
                 <div id="historialContenedor" class="space-y-4">
                     </div>
             </div>
         </div>
     </div>
 
-    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between items-center max-w-md mx-auto shadow-lg">
+    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-between items-center max-w-md mx-auto shadow-lg z-20">
         <div>
-            <p class="text-xs text-gray-500 uppercase font-semibold">Total estimado</p>
-            <p class="text-2xl font-bold text-green-600" id="totalCuenta">$0.00</p>
+            <p class="text-xs text-gray-500 uppercase font-bold tracking-tighter">Total acumulado</p>
+            <p class="text-2xl font-black text-green-600" id="totalCuenta">$0.00</p>
         </div>
-        <button id="btnGuardarCompra" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-bold shadow-md transition-transform active:scale-95">
+        <button id="btnGuardarCompra" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-bold shadow-md transition-all active:scale-95">
             Guardar Compra
         </button>
     </div>
@@ -57,12 +57,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (Asegúrate de tener tus datos aquí)
+        // IMPORTANTE: REEMPLAZA CON TUS CREDENCIALES REALES DE FIREBASE
         const firebaseConfig = {
             apiKey: "TU_API_KEY",
-            authDomain: "TU_DOMINIO.firebaseapp.com",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_STORAGE_BUCKET",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO_ID",
+            storageBucket: "TU_PROYECTO.appspot.com",
             messagingSenderId: "TU_SENDER_ID",
             appId: "TU_APP_ID"
         };
@@ -72,7 +72,7 @@
         const colLista = collection(db, "lista_actual");
         const colHistorial = collection(db, "historial");
 
-        // --- NAVEGACIÓN ENTRE TABS ---
+        // --- NAVEGACIÓN ---
         window.cambiarTab = (tab) => {
             const secLista = document.getElementById('seccionLista');
             const secHistorial = document.getElementById('seccionHistorial');
@@ -95,20 +95,30 @@
             }
         };
 
-        // --- MANEJO DE LISTA ACTUAL ---
+        // --- FUNCION PARA LIMPIAR INPUTS ---
+        const limpiarInputs = () => {
+            document.getElementById('nombre').value = '';
+            document.getElementById('precio').value = '';
+            document.getElementById('piezas').value = '';
+        };
+
+        // --- AGREGAR ITEM ---
         document.getElementById('btnAgregar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const precio = parseFloat(document.getElementById('precio').value);
             const piezas = parseInt(document.getElementById('piezas').value);
 
             if(nombre && !isNaN(precio) && !isNaN(piezas)) {
-                await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
-                document.getElementById('nombre').value = '';
-                document.getElementById('precio').value = '';
-                document.getElementById('piezas').value = '1';
+                try {
+                    await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
+                    limpiarInputs(); // <--- REQUISITO CUMPLIDO
+                } catch (e) { alert("Error al conectar con Firebase"); }
+            } else {
+                alert("Por favor llena todos los campos correctamente");
             }
         });
 
+        // --- ESCUCHAR LISTA ACTUAL (Sincronización total) ---
         onSnapshot(colLista, (snapshot) => {
             let total = 0;
             const contenedor = document.getElementById('listaContenedor');
@@ -120,16 +130,14 @@
                 total += subtotal;
 
                 contenedor.innerHTML += `
-                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500 flex justify-between items-center animate-fade-in">
                         <div>
                             <p class="font-bold text-gray-800 uppercase text-sm">${item.nombre}</p>
                             <p class="text-xs text-gray-500">${item.piezas} pzas x $${item.precio}</p>
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="font-bold text-gray-700">$${subtotal.toFixed(2)}</span>
-                            <button onclick="eliminarItem('${itemDoc.id}')" class="bg-red-50 text-red-500 p-2 rounded-full hover:bg-red-100">
-                                🗑️
-                            </button>
+                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-400 p-2 hover:text-red-600">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -138,39 +146,25 @@
         });
 
         window.eliminarItem = async (id) => {
-            if(confirm('¿Borrar este producto?')) {
-                await deleteDoc(doc(db, "lista_actual", id));
-            }
+            await deleteDoc(doc(db, "lista_actual", id));
         };
 
-        // --- MANEJO DEL HISTORIAL ---
+        // --- HISTORIAL ---
         const qHistorial = query(colHistorial, orderBy("timestamp", "desc"));
         onSnapshot(qHistorial, (snapshot) => {
             const contenedorH = document.getElementById('historialContenedor');
             contenedorH.innerHTML = '';
-
-            if(snapshot.empty) {
-                contenedorH.innerHTML = '<p class="text-center text-gray-400 mt-10">No hay compras guardadas aún.</p>';
-                return;
-            }
-
             snapshot.docs.forEach(docSnap => {
                 const compra = docSnap.data();
                 contenedorH.innerHTML += `
-                    <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-                        <div class="flex justify-between items-start mb-2 border-b pb-2">
-                            <div>
-                                <p class="text-xs text-gray-400 uppercase font-bold">Fecha</p>
-                                <p class="text-sm font-medium">${compra.fecha}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-gray-400 uppercase font-bold">Total Pagado</p>
-                                <p class="text-lg font-black text-blue-600">$${compra.total.toFixed(2)}</p>
-                            </div>
+                    <div class="bg-white p-4 rounded-lg shadow border-b-2 border-gray-200">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase">${compra.fecha}</span>
+                            <span class="text-lg font-black text-blue-600">$${compra.total.toFixed(2)}</span>
                         </div>
-                        <details class="text-xs text-gray-600">
-                            <summary class="cursor-pointer text-blue-500 font-semibold">Ver detalle (${compra.detalles.length} productos)</summary>
-                            <ul class="mt-2 space-y-1">
+                        <details class="text-xs">
+                            <summary class="text-blue-500 cursor-pointer font-bold">Ver detalle</summary>
+                            <ul class="mt-2 text-gray-600">
                                 ${compra.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
                             </ul>
                         </details>
@@ -182,24 +176,25 @@
         // --- GUARDAR COMPRA ---
         document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
             const snapshot = await getDocs(colLista);
-            if(snapshot.empty) return alert("No hay productos para guardar.");
+            if(snapshot.empty) return;
 
-            if(confirm('¿Quieres finalizar la compra y guardarla en el historial?')) {
+            if(confirm('¿Cerrar esta lista y guardarla en el historial?')) {
                 const items = snapshot.docs.map(d => d.data());
                 const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
 
                 await addDoc(colHistorial, {
-                    fecha: new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' }),
+                    fecha: new Date().toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }),
                     timestamp: Date.now(),
                     total: total,
                     detalles: items
                 });
 
-                // Borrar lista actual
-                const promesas = snapshot.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
-                await Promise.all(promesas);
-
-                alert("¡Compra guardada con éxito!");
+                // Borrar todo de la lista actual
+                const deletes = snapshot.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
+                await Promise.all(deletes);
+                
+                limpiarInputs(); // <--- REQUISITO CUMPLIDO
+                alert("¡Compra guardada!");
             }
         });
     </script>
