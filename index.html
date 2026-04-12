@@ -28,7 +28,7 @@
                         <input id="precio" type="number" step="0.01" placeholder="$ Precio" class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                         <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95">
+                    <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-lg">
                         Agregar a la lista
                     </button>
                 </div>
@@ -37,9 +37,9 @@
                     </div>
             </div>
 
-            <div id="seccionHistorial" class="hidden">
-                <h1 class="text-2xl font-bold text-center mb-6">📜 Compras Pasadas</h1>
-                <div id="historialContenedor" class="space-y-4">
+            <div id="seccionHistorial" class="hidden text-center">
+                <h1 class="text-2xl font-bold mb-6">📜 Compras Pasadas</h1>
+                <div id="historialContenedor" class="space-y-4 text-left">
                     </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (PEGA TUS DATOS AQUÍ)
+        // CONFIGURACIÓN INTEGRADA DE TOMAS
         const firebaseConfig = {
             apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
             authDomain: "lista-de-super-30116.firebaseapp.com",
@@ -98,7 +98,6 @@
             }
         };
 
-        // --- FUNCIONES DE LIMPIEZA ---
         const limpiarFormulario = () => {
             document.getElementById('nombre').value = '';
             document.getElementById('precio').value = '';
@@ -106,39 +105,27 @@
             document.getElementById('nombre').focus();
         };
 
-        // --- AGREGAR ITEM (REQUISITO: PERSISTENCIA Y LIMPIEZA) ---
+        // --- AGREGAR ITEM ---
         document.getElementById('btnAgregar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const precio = parseFloat(document.getElementById('precio').value);
             const piezas = parseInt(document.getElementById('piezas').value);
 
             if(nombre && !isNaN(precio) && !isNaN(piezas)) {
-                try {
-                    await addDoc(colLista, { 
-                        nombre, 
-                        precio, 
-                        piezas, 
-                        creado: Date.now() 
-                    });
-                    limpiarFormulario(); // Limpia al agregar
-                } catch (e) {
-                    console.error("Error al guardar:", e);
-                    alert("No se pudo guardar. Revisa la conexión o las reglas de Firebase.");
-                }
+                await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
+                limpiarFormulario();
             }
         });
 
-        // --- ESCUCHAR LISTA ACTUAL (TIEMPO REAL) ---
+        // --- ESCUCHAR LISTA (PERSISTENCIA TOTAL) ---
         onSnapshot(colLista, (snapshot) => {
             let total = 0;
             const contenedor = document.getElementById('listaContenedor');
             contenedor.innerHTML = '';
-
             snapshot.docs.forEach(itemDoc => {
                 const item = itemDoc.data();
                 const subtotal = item.precio * item.piezas;
                 total += subtotal;
-
                 contenedor.innerHTML += `
                     <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center animate-fade-in">
                         <div>
@@ -147,12 +134,9 @@
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="font-bold text-gray-700 text-lg">$${subtotal.toFixed(2)}</span>
-                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-600 transition-colors p-2">
-                                🗑️
-                            </button>
+                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-600 p-2 text-xl">🗑️</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             document.getElementById('totalCuenta').innerText = `$${total.toFixed(2)}`;
         });
@@ -166,54 +150,40 @@
         onSnapshot(qHistorial, (snapshot) => {
             const contenedorH = document.getElementById('historialContenedor');
             contenedorH.innerHTML = '';
-            
-            if(snapshot.empty) {
-                contenedorH.innerHTML = '<p class="text-center text-gray-400 mt-10">No hay compras registradas.</p>';
-                return;
-            }
-
             snapshot.docs.forEach(docSnap => {
                 const compra = docSnap.data();
                 contenedorH.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
+                    <div class="bg-white p-4 rounded-xl shadow mb-3 border border-gray-100">
                         <div class="flex justify-between items-center mb-2 border-b pb-2">
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${compra.fecha}</span>
+                            <span class="text-[10px] font-black text-gray-400 uppercase leading-none">${compra.fecha}</span>
                             <span class="text-xl font-black text-blue-600">$${compra.total.toFixed(2)}</span>
                         </div>
                         <details class="text-xs text-gray-600">
-                            <summary class="cursor-pointer text-blue-400 font-bold py-1">Ver detalles de compra</summary>
+                            <summary class="cursor-pointer text-blue-400 font-bold py-1">Ver detalles</summary>
                             <ul class="mt-2 space-y-1 bg-gray-50 p-2 rounded-lg">
                                 ${compra.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
                             </ul>
                         </details>
-                    </div>
-                `;
+                    </div>`;
             });
         });
 
-        // --- GUARDAR COMPRA (REQUISITO: PERSISTENCIA HISTÓRICA) ---
+        // --- GUARDAR COMPRA ---
         document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
             const snapshot = await getDocs(colLista);
-            if(snapshot.empty) return alert("La lista está vacía.");
-
-            if(confirm('¿Finalizar y guardar compra?')) {
+            if(snapshot.empty) return;
+            if(confirm('¿Finalizar compra?')) {
                 const items = snapshot.docs.map(d => d.data());
                 const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
-
-                // Guardar en colección de historial
                 await addDoc(colHistorial, {
-                    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' }),
+                    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
                     timestamp: Date.now(),
                     total: total,
                     detalles: items
                 });
-
-                // Limpiar la lista actual en la nube
                 const promesas = snapshot.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
                 await Promise.all(promesas);
-
-                limpiarFormulario(); // Limpia los campos al guardar
-                alert("Compra guardada correctamente.");
+                limpiarFormulario();
             }
         });
     </script>
