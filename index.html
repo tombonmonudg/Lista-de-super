@@ -11,7 +11,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-100 pb-32 text-gray-800">
+<body class="bg-gray-100 pb-24 text-gray-800">
     <div class="max-w-md mx-auto">
         <div class="flex bg-white shadow-sm sticky top-0 z-30">
             <button id="tabLista" class="flex-1 py-4 text-center tab-active" onclick="cambiarTab('lista')">Lista Actual</button>
@@ -20,38 +20,34 @@
 
         <div class="p-4">
             <div id="seccionLista">
-                <h1 class="text-2xl font-bold text-center mb-6">🛒 Mi Carrito</h1>
-                
-                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                    <input id="nombre" type="text" placeholder="Producto" class="w-full mb-2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+                <h1 class="text-2xl font-bold text-center mb-6 uppercase tracking-wider">🛒 Mi Carrito</h1>
+                <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200">
+                    <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" class="w-full mb-2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     <div class="flex gap-2">
                         <input id="precio" type="number" step="0.01" placeholder="$ Precio" class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                         <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
                     </div>
-                    <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-lg">
+                    <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95">
                         Agregar a la lista
                     </button>
                 </div>
-
-                <div id="listaContenedor" class="space-y-3">
-                    </div>
+                <div id="listaContenedor" class="space-y-3"></div>
             </div>
 
-            <div id="seccionHistorial" class="hidden text-center">
-                <h1 class="text-2xl font-bold mb-6">📜 Compras Pasadas</h1>
-                <div id="historialContenedor" class="space-y-4 text-left">
-                    </div>
+            <div id="seccionHistorial" class="hidden">
+                <h1 class="text-2xl font-bold text-center mb-6 uppercase tracking-wider">📜 Compras Pasadas</h1>
+                <div id="historialContenedor" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-5 flex justify-between items-center max-w-md mx-auto shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-20">
+    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-5 flex justify-between items-center max-w-md mx-auto shadow-2xl z-20">
         <div>
-            <p class="text-xs text-gray-400 uppercase font-black tracking-widest">Total</p>
+            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none">Total estimado</p>
             <p class="text-3xl font-black text-green-600" id="totalCuenta">$0.00</p>
         </div>
         <button id="btnGuardarCompra" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-2xl font-bold shadow-md transition-all active:scale-95">
-            Guardar Compra
+            Guardar
         </button>
     </div>
 
@@ -59,7 +55,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN INTEGRADA DE TOMAS
         const firebaseConfig = {
             apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
             authDomain: "lista-de-super-30116.firebaseapp.com",
@@ -75,49 +70,40 @@
         const colLista = collection(db, "lista_actual");
         const colHistorial = collection(db, "historial");
 
-        // --- NAVEGACIÓN ---
         window.cambiarTab = (tab) => {
             const secLista = document.getElementById('seccionLista');
             const secHistorial = document.getElementById('seccionHistorial');
             const barra = document.getElementById('barraInferior');
             const btnL = document.getElementById('tabLista');
             const btnH = document.getElementById('tabHistorial');
-
             if(tab === 'lista') {
-                secLista.classList.remove('hidden');
-                secHistorial.classList.add('hidden');
-                barra.classList.remove('hidden');
-                btnL.classList.add('tab-active');
-                btnH.classList.remove('tab-active');
+                secLista.classList.remove('hidden'); secHistorial.classList.add('hidden'); barra.classList.remove('hidden');
+                btnL.classList.add('tab-active'); btnH.classList.remove('tab-active');
             } else {
-                secLista.classList.add('hidden');
-                secHistorial.classList.remove('hidden');
-                barra.classList.add('hidden');
-                btnL.classList.remove('tab-active');
-                btnH.classList.add('tab-active');
+                secLista.classList.add('hidden'); secHistorial.classList.remove('hidden'); barra.classList.add('hidden');
+                btnL.classList.remove('tab-active'); btnH.classList.add('tab-active');
             }
         };
 
-        const limpiarFormulario = () => {
+        const limpiarInputs = () => {
             document.getElementById('nombre').value = '';
             document.getElementById('precio').value = '';
             document.getElementById('piezas').value = '';
             document.getElementById('nombre').focus();
         };
 
-        // --- AGREGAR ITEM ---
+        // --- AGREGAR ITEM A LISTA ACTUAL ---
         document.getElementById('btnAgregar').addEventListener('click', async () => {
             const nombre = document.getElementById('nombre').value;
             const precio = parseFloat(document.getElementById('precio').value);
             const piezas = parseInt(document.getElementById('piezas').value);
-
             if(nombre && !isNaN(precio) && !isNaN(piezas)) {
                 await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
-                limpiarFormulario();
+                limpiarInputs();
             }
         });
 
-        // --- ESCUCHAR LISTA (PERSISTENCIA TOTAL) ---
+        // --- ESCUCHAR LISTA ACTUAL ---
         onSnapshot(colLista, (snapshot) => {
             let total = 0;
             const contenedor = document.getElementById('listaContenedor');
@@ -127,63 +113,71 @@
                 const subtotal = item.precio * item.piezas;
                 total += subtotal;
                 contenedor.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center animate-fade-in">
-                        <div>
-                            <p class="font-bold text-gray-800 uppercase text-sm">${item.nombre}</p>
-                            <p class="text-xs text-gray-400">${item.piezas} pzas x $${item.precio}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="font-bold text-gray-700 text-lg">$${subtotal.toFixed(2)}</span>
-                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-600 p-2 text-xl">🗑️</button>
-                        </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+                        <div><p class="font-bold uppercase text-xs">${item.nombre}</p><p class="text-[10px] text-gray-400">${item.piezas} pzas x $${item.precio}</p></div>
+                        <div class="flex items-center gap-4"><span class="font-black text-lg">$${subtotal.toFixed(2)}</span>
+                        <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-500 p-2 text-xl">🗑️</button></div>
                     </div>`;
             });
             document.getElementById('totalCuenta').innerText = `$${total.toFixed(2)}`;
         });
 
-        window.eliminarItem = async (id) => {
-            await deleteDoc(doc(db, "lista_actual", id));
+        window.eliminarItem = async (id) => { 
+            if(confirm('¿Eliminar producto de la lista?')) {
+                await deleteDoc(doc(db, "lista_actual", id)); 
+            }
         };
 
-        // --- HISTORIAL ---
-        const qHistorial = query(colHistorial, orderBy("timestamp", "desc"));
-        onSnapshot(qHistorial, (snapshot) => {
+        // --- ESCUCHAR HISTORIAL ---
+        const qH = query(colHistorial, orderBy("timestamp", "desc"));
+        onSnapshot(qH, (snapshot) => {
             const contenedorH = document.getElementById('historialContenedor');
             contenedorH.innerHTML = '';
             snapshot.docs.forEach(docSnap => {
-                const compra = docSnap.data();
+                const c = docSnap.data();
                 contenedorH.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow mb-3 border border-gray-100">
-                        <div class="flex justify-between items-center mb-2 border-b pb-2">
-                            <span class="text-[10px] font-black text-gray-400 uppercase leading-none">${compra.fecha}</span>
-                            <span class="text-xl font-black text-blue-600">$${compra.total.toFixed(2)}</span>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
+                        <div class="flex justify-between items-start mb-2 border-b pb-2">
+                            <div>
+                                <span class="text-[9px] font-black text-gray-300 uppercase leading-none">${c.fecha}</span>
+                                <div class="text-xl font-black text-blue-600">$${c.total.toFixed(2)}</div>
+                            </div>
+                            <button onclick="eliminarHistorial('${docSnap.id}')" class="text-red-400 hover:text-red-600 p-1">
+                                🗑️
+                            </button>
                         </div>
-                        <details class="text-xs text-gray-600">
-                            <summary class="cursor-pointer text-blue-400 font-bold py-1">Ver detalles</summary>
+                        <details class="text-[11px] text-gray-500">
+                            <summary class="cursor-pointer text-blue-400 font-bold">Ver productos</summary>
                             <ul class="mt-2 space-y-1 bg-gray-50 p-2 rounded-lg">
-                                ${compra.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
+                                ${c.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}
                             </ul>
                         </details>
                     </div>`;
             });
         });
 
-        // --- GUARDAR COMPRA ---
+        // --- NUEVA FUNCIÓN: ELIMINAR DEL HISTORIAL ---
+        window.eliminarHistorial = async (id) => {
+            if(confirm('¿Estás seguro de que quieres eliminar esta compra del historial?')) {
+                await deleteDoc(doc(db, "historial", id));
+            }
+        };
+
+        // --- GUARDAR COMPRA EN HISTORIAL ---
         document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
-            const snapshot = await getDocs(colLista);
-            if(snapshot.empty) return;
-            if(confirm('¿Finalizar compra?')) {
-                const items = snapshot.docs.map(d => d.data());
+            const snap = await getDocs(colLista);
+            if(snap.empty) return;
+            if(confirm('¿Guardar esta compra en el historial?')) {
+                const items = snap.docs.map(d => d.data());
                 const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
                 await addDoc(colHistorial, {
                     fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
-                    timestamp: Date.now(),
-                    total: total,
-                    detalles: items
+                    timestamp: Date.now(), total, detalles: items
                 });
-                const promesas = snapshot.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
+                const promesas = snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
                 await Promise.all(promesas);
-                limpiarFormulario();
+                limpiarInputs();
+                alert("¡Compra guardada!");
             }
         });
     </script>
