@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/@scanapp-org/html5-qrcode" type="text/javascript"></script>
 
 <style>
+  /* VARIABLES DE ENTORNO Y TEMAS (CLARO/OSCURO) */
   :root {
     --bg: #f0f4f8; --card: #ffffff; --card-border: #e2e8f0; --text: #1a202c;
     --text-muted: #718096; --text-hint: #a0aec0; --accent: #2563eb;
@@ -29,11 +30,13 @@
       --orange-light: #451a03; --tab-active: #3b82f6;
     }
   }
+  
+  /* ESTILOS GENERALES DE LA ESTRUCTURA */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--bg); color: var(--text); padding-bottom: 120px; min-height: 100vh; }
   .app { max-width: 430px; margin: 0 auto; }
   
-  /* HEADER */
+  /* CABECERA (HEADER) Y NAVEGACIÓN */
   .header { background: var(--card); padding: 20px 20px 0; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .app-name { font-size: 20px; font-weight: 900; }
@@ -42,7 +45,7 @@
   .tab-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 700; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; font-family: var(--font); }
   .tab-btn.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
   
-  /* CHIP DE PRESUPUESTO RESTAURADO */
+  /* ELEMENTOS VISUALES DEL PRESUPUESTO */
   .budget-chip { font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--accent); transition: opacity .15s; }
   .budget-chip:hover { opacity: 0.8; }
   .budget-bar-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -60,12 +63,12 @@
   .budget-footer .remaining { color: var(--green); }
   .budget-footer .over-text { color: var(--red); }
 
-  /* MAIN */
+  /* CONTENEDOR PRINCIPAL */
   .main { padding: 20px; }
   
-  /* FORMULARIOS */
+  /* ENTRADAS DE FORMULARIOS CORREGIDAS (INCLUYE .modal input) */
   .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
-  .form-card input, .form-card select { 
+  .form-card input, .form-card select, .modal input { 
     width: 100%; 
     padding: 11px 14px; 
     border: 1.5px solid var(--card-border); 
@@ -78,27 +81,24 @@
     transition: border-color 0.2s; 
     font-family: var(--font); 
   }
-  .form-card input:focus, .form-card select:focus { 
+  .form-card input:focus, .form-card select:focus, .modal input:focus { 
     border-color: var(--accent); 
   }
   .form-row { display: flex; gap: 10px; }
   
-  /* BOTONES */
+  /* ESTILOS DE LOS BOTONES DE LA INTERFAZ */
   .btn-primary { width: 100%; margin-top: 12px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: var(--font); }
   .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-cancel { display: none; width: 100%; margin-top: 8px; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
-  
-  /* BOTÓN SALIR Y ESCÁNER CORREGIDOS */
   .btn-logout { font-family: var(--font); font-size: 12px; font-weight: 700; background: var(--red-light); color: var(--red); border: 1px solid var(--red); padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
   .btn-logout:hover { background: var(--red); color: #fff; }
   .btn-scan { width: 100%; margin-bottom: 12px; padding: 11px; background: var(--bg); color: var(--text); border: 1.5px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font); transition: background 0.2s; }
   .btn-scan:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-
   .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--card); color: var(--text); border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: background 0.15s; font-family: var(--font); }
   .btn-google:hover { background: var(--accent-light); }
   .btn-google svg { width: 18px; height: 18px; }
 
-  /* CATEGORÍAS */
+  /* COMPONENTES DE LAS CATEGORÍAS */
   .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; display: inline-flex; align-items: center; gap: 4px; }
   .cat-frutas { background: #fee2e2; color: #991b1b; }
   .cat-verduras { background: #dcfce7; color: #166534; }
@@ -111,7 +111,7 @@
   .cat-congelados { background: #ccfbf1; color: #0f766e; }
   .cat-otro { background: #f1f5f9; color: #475569; }
 
-  /* TARJETAS DE ITEMS */
+  /* TARJETAS DE PRODUCTOS (ITEMS) */
   .item-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--card-border); display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; }
   .item-card.done-item { opacity: 0.55; }
   .item-info { flex: 1; min-width: 0; }
@@ -123,12 +123,12 @@
   .check-btn { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--card-border); background: none; cursor: pointer; }
   .check-btn.checked { background: var(--green); border-color: var(--green); color: white; display: flex; align-items: center; justify-content: center; }
   
-  /* SUGERENCIAS (AUTOCOMPLETE) */
-  .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100 dependency - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; }
+  /* CUADRO DE SUGERENCIAS INTEGRADAS (AUTOCOMPLETE) */
+  .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; }
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* SECCIONES COMPRAS */
+  /* LISTADO HISTÓRICO DE COMPRAS */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -140,17 +140,7 @@
   details ul { margin-top: 8px; padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
   details li { font-size: 12px; color: var(--text-muted); padding: 2px 0; }
 
-  /* MODAL PRESUPUESTO */
-  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5); align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--card); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 430px; }
-  .modal h3 { font-size: 17px; font-weight: 900; margin-bottom: 16px; }
-  .modal-btns { display: flex; gap: 10px; }
-  .modal-btns button { flex: 1; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 800; cursor: pointer; border: none; font-family: var(--font); }
-  .btn-confirm { background: var(--accent); color: #fff; }
-  .btn-modal-cancel { background: var(--bg); color: var(--text-muted); }
-
-  /* BARRA INFERIOR */
+  /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
   .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
   .total-label { font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--text-hint); }
   .total-amount { font-size: 30px; font-weight: 900; color: var(--green); }
@@ -173,7 +163,7 @@
         <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
       </div>
       <button id="btnGoogle" class="btn-google">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92(3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Entrar con Google
       </button>
       <button id="btnRegistro" class="btn-cancel" style="display: block; width: 100%; margin-top: 20px; text-decoration: underline;">¿No tienes cuenta? Regístrate por correo aquí</button>
@@ -181,6 +171,7 @@
   </div>
 
   <div id="appContenido" class="hidden">
+    
     <div class="header">
       <div class="header-top">
         <div class="app-name">🛒 Súper<span>Familiar</span></div>
@@ -196,6 +187,7 @@
     </div>
    
     <div class="main">
+      
       <div id="seccionLista">
         
         <div class="budget-bar-card" id="budgetBarCard" style="display:none">
@@ -283,6 +275,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
  
+// INICIALIZACIÓN DE CREDENCIALES DEL BACKEND
 const firebaseConfig = {
   apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
   authDomain: "lista-de-super-30116.firebaseapp.com",
@@ -307,11 +300,10 @@ let usuarioActual = null;
 let productosDiccionario = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
 
-// Mapeo global de Emojis para categorías
 const catEmojis = { frutas:'🍎', verduras:'🥦', lacteos:'🥛', carnes:'🥩', panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', quimicos:'🧪', congelados:'🥶', otro:'📦' };
 const catNames = { frutas:'Frutas', verduras:'Verduras', lacteos:'Lácteos', carnes:'Carnes', panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', quimicos:'Químicos', congelados:'Congelados', otro:'Otro' };
 
-// --- LOGIN CON CORREO ---
+// FLUJO DE CONTROL: INGRESOS Y ACCESOS POR CORREO
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -319,10 +311,12 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
 });
 
+// FLUJO DE CONTROL: INGRESO CON GOOGLE (REDIRECCIÓN LIMPIA)
 document.getElementById('btnGoogle').addEventListener('click', async () => {
   try { await signInWithRedirect(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
 });
 
+// FLUJO DE CONTROL: REGISTRO DE CUENTAS NUEVAS POR CORREO
 document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -334,9 +328,8 @@ document.getElementById('btnRegistro').addEventListener('click', async () => {
 
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-// --- CORREGIDO: ESCUCHAR ESTADO DE LA SESIÓN Y PROCESAR REDIRECCIÓN DE FORMA ESTRICTA ---
+// CONTROLADOR SÍNCRONO: VERIFICADOR DEL ESTADO DE SESIÓN Y REDIRECCIONES DE GOOGLE
 onAuthStateChanged(auth, async (user) => {
-  // 1. Primero, revisamos si venimos regresando de una redirección de Google
   try {
     const result = await getRedirectResult(auth);
     if (result?.user) {
@@ -348,26 +341,30 @@ onAuthStateChanged(auth, async (user) => {
     alert("Error de autenticación: " + error.message);
   }
 
-  // 2. Ahora sí, evaluamos el estado del usuario de forma segura
   if (user || usuarioActual) {
-    if (!usuarioActual) usuarioActual = user; // Aseguramos tener la sesión global
-    
-    // Ocultamos el login y mostramos la aplicación
+    if (!usuarioActual) usuarioActual = user;
     document.getElementById('authSeccion').classList.add('hidden');
     document.getElementById('appContenido').classList.remove('hidden');
-    
-    // Inicializamos todo el ecosistema en tiempo real
     inicializarListeners();
     cargarDiccionario();
   } else {
-    // Si realmente no hay usuario, mantenemos el formulario visible
     usuarioActual = null;
     document.getElementById('authSeccion').classList.remove('hidden');
     document.getElementById('appContenido').classList.add('hidden');
   }
 });
  
-// --- LÓGICA DE PRESUPUESTO ---
+// NAVEGACIÓN ENTRE PESTAÑAS (SWITCH TABS)
+window.cambiarTab = (tab) => {
+  const esList = tab === 'lista';
+  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
+  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
+  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
+  document.getElementById('tabLista').classList.toggle('active', esList);
+  document.getElementById('tabHistorial').classList.toggle('active', !esList);
+};
+
+// CÁLCULO GENERAL Y MÓDULO DE INTERFAZ DEL PRESUPUESTO
 window.abrirModalPresupuesto = () => {
   if (presupuesto) document.getElementById('inputPresupuesto').value = presupuesto;
   document.getElementById('modalOverlay').classList.add('open');
@@ -403,15 +400,7 @@ function actualizarBudgetUI(total) {
   } else { chip.textContent = 'Sin definir'; card.style.display = 'none'; }
 }
 
-window.cambiarTab = (tab) => {
-  const esList = tab === 'lista';
-  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
-  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
-  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
-  document.getElementById('tabLista').classList.toggle('active', esList);
-  document.getElementById('tabHistorial').classList.toggle('active', !esList);
-};
-
+// CONTROLADOR DE INTELIGENCIA DE AUTOCOMPLETADO (DICTIONARY)
 async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
@@ -439,6 +428,7 @@ document.getElementById('nombre').addEventListener('input', (e) => {
   } else { box.style.display = 'none'; }
 });
  
+// LÓGICA DE CONTROL DEL ESCÁNER DE CÓDIGOS DE BARRA (HARDWARE/CAMERA)
 let html5QrcodeScanner;
 document.getElementById('btnEscanear').addEventListener('click', () => {
   const reader = document.getElementById('reader');
@@ -464,6 +454,7 @@ const limpiarInputs = () => {
   document.getElementById('btnCancelar').style.display = 'none';
 };
  
+// ESCUCHADORES EN TIEMPO REAL (FIRESTORE REALTIME SYNC)
 function inicializarListeners() {
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
@@ -521,6 +512,7 @@ function inicializarListeners() {
   });
 }
 
+// CONTROLADORES DE ACCIONES CRUD (AGREGAR, EDITAR, BORRAR)
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
@@ -568,6 +560,7 @@ window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
 };
 document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
 
+// FINALIZACIÓN DE COMPRA Y VOLCADO AL HISTORIAL
 document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
   const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
   if (snap.empty) return alert('Tu lista está vacía.');
