@@ -84,6 +84,19 @@
   .form-card input:focus, .form-card select:focus, .modal input:focus { 
     border-color: var(--accent); 
   }
+  .modal-overlay { 
+    display: none !important; 
+    position: fixed; 
+    inset: 0; 
+    z-index: 50; 
+    background: rgba(0,0,0,0.5); 
+    align-items: flex-end; 
+    justify-content: center; 
+  }
+
+  .modal-overlay.open { 
+    display: flex !important; 
+  }
   .form-row { display: flex; gap: 10px; }
   
   /* ESTILOS DE LOS BOTONES DE LA INTERFAZ */
