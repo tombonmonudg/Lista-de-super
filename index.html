@@ -334,18 +334,36 @@ document.getElementById('btnRegistro').addEventListener('click', async () => {
 
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
+// --- CORREGIDO: ESCUCHAR ESTADO DE LA SESIÓN Y PROCESAR REDIRECCIÓN DE FORMA ESTRICTA ---
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    usuarioActual = user;
+  // 1. Primero, revisamos si venimos regresando de una redirección de Google
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log("Sesión recuperada exitosamente tras la redirección de Google");
+      usuarioActual = result.user;
+    }
+  } catch (error) {
+    console.error("Error al procesar la redirección de Google:", error);
+    alert("Error de autenticación: " + error.message);
+  }
+
+  // 2. Ahora sí, evaluamos el estado del usuario de forma segura
+  if (user || usuarioActual) {
+    if (!usuarioActual) usuarioActual = user; // Aseguramos tener la sesión global
+    
+    // Ocultamos el login y mostramos la aplicación
     document.getElementById('authSeccion').classList.add('hidden');
     document.getElementById('appContenido').classList.remove('hidden');
+    
+    // Inicializamos todo el ecosistema en tiempo real
     inicializarListeners();
     cargarDiccionario();
   } else {
+    // Si realmente no hay usuario, mantenemos el formulario visible
     usuarioActual = null;
     document.getElementById('authSeccion').classList.remove('hidden');
     document.getElementById('appContenido').classList.add('hidden');
-    try { const result = await getRedirectResult(auth); } catch (error) { console.error(error); }
   }
 });
  
