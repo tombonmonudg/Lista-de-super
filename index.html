@@ -7,8 +7,6 @@
 <title>Súper Familiar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
-<!-- Incluimos librería externa ligera para garantizar compatibilidad del escáner en dispositivos antiguos si se requiere -->
-<link rel="manifest" href="manifest.json"> 
 <script src="https://unpkg.com/@scanapp-org/html5-qrcode" type="text/javascript"></script>
 
 <style>
@@ -34,6 +32,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--bg); color: var(--text); padding-bottom: 120px; min-height: 100vh; }
   .app { max-width: 430px; margin: 0 auto; }
+  
+  /* HEADER */
   .header { background: var(--card); padding: 20px 20px 0; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .app-name { font-size: 20px; font-weight: 900; }
@@ -41,14 +41,27 @@
   .tabs { display: flex; }
   .tab-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 700; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; }
   .tab-btn.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
+  
+  /* MAIN */
   .main { padding: 20px; }
+  
+  /* FORMULARIOS */
   .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
-  .form-card input, .form-card select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--text); background: var(--bg); margin-bottom: 10px; outline: none; }
+  .form-card input, .form-card select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--text); background: var(--bg); margin-bottom: 10px; outline: none; transition: border-color 0.2s; }
+  .form-card input:focus, .form-card select:focus { border-color: var(--accent); }
   .form-row { display: flex; gap: 10px; }
-  .btn-primary { width: 100%; margin-top: 12px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; }
+  
+  /* BOTONES */
+  .btn-primary { width: 100%; margin-top: 12px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-cancel { display: none; width: 100%; margin-top: 8px; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; }
   
-  /* CATEGORÍAS ASIGNADAS */
+  /* BOTÓN DE GOOGLE */
+  .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--card); color: var(--text); border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: background 0.15s; }
+  .btn-google:hover { background: var(--accent-light); }
+  .btn-google svg { width: 18px; height: 18px; }
+
+  /* CATEGORÍAS */
   .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; }
   .cat-frutas { background: #fee2e2; color: #991b1b; }
   .cat-verduras { background: #dcfce7; color: #166534; }
@@ -61,6 +74,7 @@
   .cat-congelados { background: #ccfbf1; color: #0f766e; }
   .cat-otro { background: #f1f5f9; color: #475569; }
 
+  /* TARJETAS DE ITEMS */
   .item-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--card-border); display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; }
   .item-card.done-item { opacity: 0.55; }
   .item-info { flex: 1; min-width: 0; }
@@ -77,378 +91,11 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* AUTH PANEL */
-  .auth-container { background: var(--card); padding: 24px; border-radius: var(--radius); border: 1px solid var(--card-border); margin-top: 40px; box-shadow: var(--shadow); }
-  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
-  .total-amount { font-size: 30px; font-weight: 900; color: var(--green); }
-  .btn-save { background: var(--green); color: #fff; border: none; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 900; cursor: pointer; }
-  .hidden { display: none !important; }
-</style>
-</head>
-<body>
-<div class="app">
-
-  <!-- LOGIN CONTAINER -->
-  <div id="authSeccion" class="main">
-    <div class="auth-container">
-      <h2 class="text-xl font-black text-center mb-4">🔐 Iniciar Sesión</h2>
-      <input id="authEmail" type="email" placeholder="Correo electrónico" class="w-full p-3 border rounded-lg mb-2 bg-white" style="color:black">
-      <input id="authPassword" type="password" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-4 bg-white" style="color:black">
-      <button id="btnLogin" class="btn-primary !mt-0 mb-2">Ingresar</button>
-      <button id="btnRegistro" class="w-full text-xs font-bold text-gray-500 text-center py-2">¿No tienes cuenta? Regístrate aquí</button>
-    </div>
-  </div>
-
-  <!-- CONTENIDO PRINCIPAL DE LA APP (OCULTO ANTES DE LOGUEARSE) -->
-  <div id="appContenido" class="hidden">
-    <!-- HEADER -->
-    <div class="header">
-      <div class="header-top">
-        <div class="app-name">🛒 Súper<span>Familiar</span></div>
-        <button id="btnLogout" class="text-xs bg-red-500 text-white px-3 py-1 rounded-full font-bold">Salir</button>
-      </div>
-      <div class="tabs">
-        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista Actual</button>
-        <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">Historial</button>
-      </div>
-    </div>
-   
-    <!-- MAIN -->
-    <div class="main">
-      <div id="seccionLista">
-        <!-- FORMULARIO -->
-        <div class="form-card">
-          <!-- Escáner integrado -->
-          <button id="btnEscanear" class="w-full mb-3 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold text-xs">📷 Escanear Código de Barras</button>
-          <div id="reader" style="width: 100%; display:none;" class="mb-2"></div>
-
-          <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
-          <div id="sugerencias" class="sugerencias-box"></div>
-
-          <div class="form-row">
-            <input id="precio" type="number" step="0.01" placeholder="$ Precio" style="flex:1">
-            <input id="piezas" type="number" placeholder="Cant." style="width:90px">
-          </div>
-          <!-- Nuevas Categorías -->
-          <select id="categoria" class="mt-2" style="margin-bottom:0">
-            <option value="otro">📦 Categoría (Otro)</option>
-            <option value="frutas">Frutas</option>
-            <option value="verduras">Verduras</option>
-            <option value="lacteos">Lácteos</option>
-            <option value="carnes">Carnes</option>
-            <option value="panaderia">Panadería</option>
-            <option value="bebidas">Bebidas</option>
-            <option value="limpieza">Limpieza</option>
-            <option value="quimicos">Químicos</option>
-            <option value="congelados">Congelados</option>
-          </select>
-          <button class="btn-primary" id="btnAgregar">+ Agregar a la lista</button>
-          <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
-        </div>
-   
-        <!-- LISTADOS -->
-        <div id="pendientesWrap">
-          <div class="section-label" id="labelPendientes">pendientes</div>
-          <div id="listaContenedor"></div>
-        </div>
-   
-        <div id="completadosWrap" class="hidden">
-          <div class="section-label" id="labelCompletados">completados</div>
-          <div id="listaCompletados"></div>
-        </div>
-      </div>
-   
-      <!-- SECCIÓN HISTORIAL -->
-      <div id="seccionHistorial" class="hidden">
-        <div id="historialContenedor"></div>
-      </div>
-    </div>
-
-    <!-- BARRA INFERIOR -->
-    <div class="bottom-bar" id="barraInferior">
-      <div>
-        <div class="total-label">Total estimado (Pendientes + Completados)</div>
-        <div class="total-amount" id="totalCuenta">$0.00</div>
-      </div>
-      <button class="btn-save" id="btnGuardarCompra">Guardar compra</button>
-    </div>
-  </div>
-</div>
- 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
- 
-const firebaseConfig = {
-  apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
-  authDomain: "lista-de-super-30116.firebaseapp.com",
-  projectId: "lista-de-super-30116",
-  storageBucket: "lista-de-super-30116.firebasestorage.app",
-  messagingSenderId: "686745242098",
-  appId: "1:686745242098:web:a2612a5e2ea4f381e9836b",
-  measurementId: "G-FRYK1VCS83"
-};
- 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const colLista = collection(db, "lista_actual");
-const colHistorial = collection(db, "historial");
-const colDiccionario = collection(db, "diccionario_productos");
- 
-let idEdicion = null;
-let usuarioActual = null;
-let productosDiccionario = [];
-
-// --- AUTENTICACIÓN ---
-document.getElementById('btnLogin').addEventListener('click', async () => {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass = document.getElementById('authPassword').value;
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch (e) { alert("Error al ingresar: " + e.message); }
-});
-
-document.getElementById('btnRegistro').addEventListener('click', async () => {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass = document.getElementById('authPassword').value;
-  if(confirm("¿Deseas registrar una nueva cuenta con estos datos?")) {
-    try {
-      await createUserWithEmailAndPassword(auth, email, pass);
-      alert("Cuenta creada con éxito");
-    } catch (e) { alert("Error en registro: " + e.message); }
-  }
-});
-
-document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    usuarioActual = user;
-    document.getElementById('authSeccion').classList.add('hidden');
-    document.getElementById('appContenido').classList.remove('hidden');
-    inicializarListeners();
-    cargarDiccionario();
-  } else {
-    usuarioActual = null;
-    document.getElementById('authSeccion').classList.remove('hidden');
-    document.getElementById('appContenido').classList.add('hidden');
-  }
-});
- 
-// --- TABS ---
-window.cambiarTab = (tab) => {
-  const esList = tab === 'lista';
-  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
-  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
-  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
-  document.getElementById('tabLista').classList.toggle('active', esList);
-  document.getElementById('tabHistorial').classList.toggle('active', !esList);
-};
-
-// --- DICCIONARIO AUTOCOMPLETADO ---
-async function cargarDiccionario() {
-  onSnapshot(colDiccionario, (snap) => {
-    productosDiccionario = snap.docs.map(d => d.data());
-  });
-}
-
-document.getElementById('nombre').addEventListener('input', (e) => {
-  const busqueda = e.target.value.toLowerCase().trim();
-  const box = document.getElementById('sugerencias');
-  box.innerHTML = '';
-  if(!busqueda) { box.style.display = 'none'; return; }
-
-  const filtrados = productosDiccionario.filter(p => p.nombre.toLowerCase().includes(busqueda));
-  if(filtrados.length > 0) {
-    box.style.display = 'block';
-    filtrados.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'sugerencia-item';
-      div.textContent = `${p.nombre} (${p.categoria})`;
-      div.onclick = () => {
-        document.getElementById('nombre').value = p.nombre;
-        document.getElementById('precio').value = p.precio;
-        document.getElementById('categoria').value = p.categoria;
-        box.style.display = 'none';
-      };
-      box.appendChild(div);
-    });
-  } else { box.style.display = 'none'; }
-});
- 
-// --- ESCÁNER DE CÓDIGO DE BARRAS ---
-let html5QrcodeScanner;
-document.getElementById('btnEscanear').addEventListener('click', () => {
-  const reader = document.getElementById('reader');
-  if(reader.style.display === 'none') {
-    reader.style.display = 'block';
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render((decodedText) => {
-      // Buscar en diccionario si el código ya existe
-      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
-      if(encontrado) {
-        document.getElementById('nombre').value = encontrado.nombre;
-        document.getElementById('precio').value = encontrado.precio;
-        document.getElementById('categoria').value = encontrado.categoria;
-      } else {
-        document.getElementById('nombre').value = "Código: " + decodedText;
-      }
-      html5QrcodeScanner.clear();
-      reader.style.display = 'none';
-    });
-  } else {
-    html5QrcodeScanner.clear();
-    reader.style.display = 'none';
-  }
-});
-
-const limpiarInputs = () => {
-  document.getElementById('nombre').value = '';
-  document.getElementById('precio').value = '';
-  document.getElementById('piezas').value = '';
-  document.getElementById('categoria').value = 'otro';
-  idEdicion = null;
-  const btn = document.getElementById('btnAgregar');
-  btn.textContent = '+ Agregar a la lista';
-  document.getElementById('btnCancelar').style.display = 'none';
-};
- 
-// --- ESPECÍFICOS DE USUARIO EN TIEMPO REAL ---
-function inicializarListeners() {
-  const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
-  onSnapshot(qLista, (snapshot) => {
-    let totalTotal = 0; // NUEVO: Sumará TODO (Pendientes + Completados)
-    const pendientes = [];
-    const completados = [];
-   
-    snapshot.docs.forEach(itemDoc => {
-      const item = { id: itemDoc.id, ...itemDoc.data() };
-      const subtotal = item.precio * item.piezas;
-      totalTotal += subtotal; // Se acumulan todos los artículos independientemente de su estado
-
-      if (!item.completado) { pendientes.push(item); } 
-      else { completados.push(item); }
-    });
-   
-    // NUEVO REQUERIMIENTO: Ordenar por orden alfabético
-    pendientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
-    completados.sort((a, b) => a.nombre.localeCompare(b.nombre));
-   
-    const cont = document.getElementById('listaContenedor');
-    const contC = document.getElementById('listaCompletados');
-    cont.innerHTML = ''; contC.innerHTML = '';
-   
-    pendientes.forEach(item => cont.appendChild(crearItemEl(item, false)));
-    completados.forEach(item => contC.appendChild(crearItemEl(item, true)));
-   
-    document.getElementById('totalCuenta').textContent = `$${totalTotal.toFixed(2)}`;
-    document.getElementById('completadosWrap').classList.toggle('hidden', completados.length === 0);
-  });
-
-  const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
-  onSnapshot(qHist, (snapshot) => {
-    const cont = document.getElementById('historialContenedor');
-    cont.innerHTML = '';
-    
-    // Convertir a array para ordenar el historial por fecha descendente
-    const historialOrdenado = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-    historialOrdenado.sort((a,b) => b.timestamp - a.timestamp);
-
-    historialOrdenado.forEach(c => {
-      // NUEVO REQUERIMIENTO: Productos del historial ordenados alfabéticamente
-      const detallesOrdenados = [...c.detalles].sort((a,b) => a.nombre.localeCompare(b.nombre));
-      
-      const div = document.createElement('div');
-      div.className = 'hist-card';
-      div.innerHTML = `
-        <div class="hist-header">
-          <div>
-            <div class="hist-fecha">${c.fecha}</div>
-            <div class="hist-total">$${c.total.toFixed(2)}</div>
-          </div>
-          <button class="hist-del" onclick="eliminarHistorial('${c.id}')">🗑️</button>
-        </div>
-        <details>
-          <summary>Ver ${detallesOrdenados.length} productos</summary>
-          <ul>${detallesOrdenados.map(i => `<li>${i.piezas}× ${i.nombre} [${i.categoria || 'otro'}] — $${(i.precio * i.piezas).toFixed(2)}</li>`).join('')}</ul>
-        </details>
-      `;
-      cont.appendChild(div);
-    });
-  });
-}
-
-// --- ACCIONES CRUD ---
-document.getElementById('btnAgregar').addEventListener('click', async () => {
-  const nombre = document.getElementById('nombre').value.trim();
-  const precio = parseFloat(document.getElementById('precio').value);
-  const piezas = parseInt(document.getElementById('piezas').value);
-  const categoria = document.getElementById('categoria').value;
-  
-  if (!nombre || isNaN(precio) || isNaN(piezas)) return;
-  
-  if (idEdicion) {
-    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria });
-  } else {
-    // Almacena vinculando el ID único del usuario autenticado
-    await addDoc(colLista, { nombre, precio, piezas, categoria, completado: false, creado: Date.now(), userId: usuarioActual.uid });
-    
-    // Almacenar en el catálogo global de autocompletado si es un artículo nuevo
-    const existeEnDiccionario = productosDiccionario.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
-    if(!existeEnDiccionario) {
-      await addDoc(colDiccionario, { nombre, precio, categoria });
-    }
-  }
-  limpiarInputs();
-});
-
-function crearItemEl(item, completado) {
-  const subtotal = item.precio * item.piezas;
-  const div = document.createElement('div');
-  div.className = 'item-card' + (completado ? ' done-item' : '');
-  div.innerHTML = `
-    <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
-    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre}', ${item.precio}, ${item.piezas}, '${item.categoria}')` : ''}">
-      <div class="item-name ${completado ? 'tachado' : ''}">${item.nombre}</div>
-      <div class="item-sub">
-        <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
-        <span class="cat-badge cat-${item.categoria}">${item.categoria}</span>
-      </div>
-    </div>
-    <span class="item-price ${completado ? 'tachado' : ''}">$${subtotal.toFixed(2)}</span>
-    <button class="del-btn" onclick="eliminarItem('${item.id}')">🗑️</button>
-  `;
-  return div;
-}
-
-window.toggleCompletado = async (id, estadoActual) => { await updateDoc(doc(db, "lista_actual", id), { completado: !estadoActual }); };
-window.eliminarItem = async (id) => { if (confirm('¿Eliminar producto?')) await deleteDoc(doc(db, "lista_actual", id)); };
-window.eliminarHistorial = async (id) => { if (confirm('¿Eliminar del historial?')) await deleteDoc(doc(db, "historial", id)); };
-window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
-  idEdicion = id; document.getElementById('nombre').value = nombre; document.getElementById('precio').value = precio;
-  document.getElementById('piezas').value = piezas; document.getElementById('categoria').value = categoria;
-  document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; document.getElementById('btnCancelar').style.display = 'block';
-};
-document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
-
-document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
-  const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
-  if (snap.empty) return alert('Tu lista está vacía.');
-  if (!confirm('¿Guardar esta compra en tu historial?')) return;
- 
-  const items = snap.docs.map(d => d.data());
-  const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
- 
-  await addDoc(colHistorial, {
-    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
-    timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
-  });
-  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
-  limpiarInputs();
-});
-</script>
-</body>
-</html>
+  /* SECCIONES COMPRAS */
+  .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
+  .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
+  .hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); }
+  .hist-fecha { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+  .hist-total { font-size: 22px; font-weight: 900; color: var(--accent); }
+  .hist-del { background: none; border: none; cursor
