@@ -324,22 +324,94 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
 });
 
-// FLUJO DE CONTROL: INGRESO CON GOOGLE (REDIRECCIÓN LIMPIA)
-document.getElementById('btnGoogle').addEventListener('click', async () => {
-  try { await signInWithRedirect(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
+// ==========================================
+// FLUJO DE CONTROL: ACCIONES DE AUTENTICACIÓN
+// ==========================================
+
+// INGRESO CON CORREO
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Por favor, llena los campos.");
+  try { 
+    await signInWithEmailAndPassword(auth, email, pass); 
+  } catch (e) { 
+    alert("Error al ingresar: " + e.message); 
+  }
 });
 
-// FLUJO DE CONTROL: REGISTRO DE CUENTAS NUEVAS POR CORREO
+// INGRESO CON GOOGLE (REDIRECCIÓN LIMPIA)
+document.getElementById('btnGoogle').addEventListener('click', async () => {
+  try { 
+    await signInWithRedirect(auth, googleProvider); 
+  } catch (e) { 
+    alert("Error al conectar con Google: " + e.message); 
+  }
+});
+
+// REGISTRO DE CUENTAS NUEVAS POR CORREO
 document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
   if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
-    try { await createUserWithEmailAndPassword(auth, email, pass); alert("¡Cuenta creada exitosamente!"); } catch (e) { alert("Error: " + e.message); }
+    try { 
+      await createUserWithEmailAndPassword(auth, email, pass); 
+      alert("¡Cuenta creada exitosamente!"); 
+    } catch (e) { 
+      alert("Error: " + e.message); 
+    }
   }
 });
 
+// CERRAR SESIÓN
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+
+// ==========================================
+// CONTROLADOR CENTRAL DE ACCESO Y REDIRECCIÓN
+// ==========================================
+
+// FUNCIÓN ASÍNCRONA PARA PROCESAR EL RETORNO DE GOOGLE Y ACTIVAR ESCUCHADORES
+async function inicializarAutenticacion() {
+  // 1. Forzar al navegador a procesar la respuesta que dejó Google en la URL
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log("¡Éxito! Token de Google procesado para el usuario:", result.user.uid);
+      usuarioActual = result.user;
+    }
+  } catch (error) {
+    console.error("Error al procesar la redirección de Google:", error);
+    if (error.code !== 'auth/redirect-cancelled-by-user') {
+      alert("Hubo un problema al regresar de Google: " + error.message);
+    }
+  }
+
+  // 2. Escuchar el estado de la sesión en tiempo real (Realtime Auth Listener)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      usuarioActual = user;
+      
+      // Ocultar pantalla de acceso y revelar la aplicación principal
+      document.getElementById('authSeccion').classList.add('hidden');
+      document.getElementById('appContenido').classList.remove('hidden');
+      
+      // Encender sincronización de base de datos en tiempo real
+      inicializarListeners();
+      cargarDiccionario();
+    } else {
+      usuarioActual = null;
+      
+      // Mostrar obligatoriamente el formulario de acceso
+      document.getElementById('authSeccion').classList.remove('hidden');
+      document.getElementById('appContenido').classList.add('hidden');
+    }
+  });
+}
+
+// EJECUTAR EL NÚCLEO DE AUTENTICACIÓN INMEDIATAMENTE AL CARGAR EL SCRIPT
+inicializarAutenticacion();
 
 // CONTROLADOR SÍNCRONO: VERIFICADOR DEL ESTADO DE SESIÓN Y REDIRECCIONES DE GOOGLE
 onAuthStateChanged(auth, async (user) => {
