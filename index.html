@@ -98,4 +98,394 @@
   .hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); }
   .hist-fecha { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
   .hist-total { font-size: 22px; font-weight: 900; color: var(--accent); }
-  .hist-del { background: none; border: none; cursor
+  .hist-del { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
+  details summary { font-size: 12px; font-weight: 800; color: var(--accent); cursor: pointer; }
+  details ul { margin-top: 8px; padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
+  details li { font-size: 12px; color: var(--text-muted); padding: 2px 0; }
+
+  /* BARRA INFERIOR */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+  .total-label { font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--text-hint); }
+  .total-amount { font-size: 30px; font-weight: 900; color: var(--green); }
+  .btn-save { background: var(--green); color: #fff; border: none; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 900; cursor: pointer; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="authSeccion" class="main">
+    <div class="form-card" style="margin-top: 40px; padding: 30px 20px;">
+      <h2 style="font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 24px; letter-spacing: -0.5px;">🔐 Acceso Familiar</h2>
+      
+      <input id="authEmail" type="email" placeholder="Correo electrónico">
+      <input id="authPassword" type="password" placeholder="Contraseña">
+      
+      <button id="btnLogin" class="btn-primary" style="margin-top: 5px;">Ingresar con Correo</button>
+      
+      <div style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-hint); font-size: 12px; font-weight: 700;">
+        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
+        <span style="padding: 0 10px;">O BIEN</span>
+        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
+      </div>
+
+      <button id="btnGoogle" class="btn-google">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Entrar con Google
+      </button>
+
+      <button id="btnRegistro" class="btn-cancel" style="display: block; width: 100%; margin-top: 20px; text-decoration: underline;">
+        ¿No tienes cuenta? Regístrate por correo aquí
+      </button>
+    </div>
+  </div>
+
+  <div id="appContenido" class="hidden">
+    <div class="header">
+      <div class="header-top">
+        <div class="app-name">🛒 Súper<span>Familiar</span></div>
+        <button id="btnLogout" class="text-xs bg-red-500 text-white px-3 py-1 rounded-full font-bold">Salir</button>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista Actual</button>
+        <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">Historial</button>
+      </div>
+    </div>
+   
+    <div class="main">
+      <div id="seccionLista">
+        <div class="form-card">
+          <button id="btnEscanear" class="w-full mb-3 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 py-2 rounded-lg font-bold text-xs">📷 Escanear Código de Barras</button>
+          <div id="reader" style="width: 100%; display:none;" class="mb-2"></div>
+
+          <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
+          <div id="sugerencias" class="sugerencias-box"></div>
+
+          <div class="form-row">
+            <input id="precio" type="number" step="0.01" placeholder="$ Precio" style="flex:1">
+            <input id="piezas" type="number" placeholder="Cant." style="width:90px">
+          </div>
+          
+          <select id="categoria" class="mt-2" style="margin-bottom:0">
+            <option value="otro">📦 Categoría (Otro)</option>
+            <option value="frutas">Frutas</option>
+            <option value="verduras">Verduras</option>
+            <option value="lacteos">Lácteos</option>
+            <option value="carnes">Carnes</option>
+            <option value="panaderia">Panadería</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="limpieza">Limpieza</option>
+            <option value="quimicos">Químicos</option>
+            <option value="congelados">Congelados</option>
+          </select>
+          <button class="btn-primary" id="btnAgregar">+ Agregar a la lista</button>
+          <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
+        </div>
+   
+        <div id="pendientesWrap">
+          <div class="section-label" id="labelPendientes">pendientes</div>
+          <div id="listaContenedor"></div>
+        </div>
+   
+        <div id="completadosWrap" class="hidden">
+          <div class="section-label" id="labelCompletados">completados</div>
+          <div id="listaCompletados"></div>
+        </div>
+      </div>
+   
+      <div id="seccionHistorial" class="hidden">
+        <div id="historialContenedor"></div>
+      </div>
+    </div>
+
+    <div class="bottom-bar" id="barraInferior">
+      <div>
+        <div class="total-label">Total estimado (Pendientes + Completados)</div>
+        <div class="total-amount" id="totalCuenta">$0.00</div>
+      </div>
+      <button class="btn-save" id="btnGuardarCompra">Guardar compra</button>
+    </div>
+  </div>
+</div>
+ 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+ 
+const firebaseConfig = {
+  apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
+  authDomain: "lista-de-super-30116.firebaseapp.com",
+  projectId: "lista-de-super-30116",
+  storageBucket: "lista-de-super-30116.firebasestorage.app",
+  messagingSenderId: "686745242098",
+  appId: "1:686745242098:web:a2612a5e2ea4f381e9836b",
+  measurementId: "G-FRYK1VCS83"
+};
+ 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+const colLista = collection(db, "lista_actual");
+const colHistorial = collection(db, "historial");
+const colDiccionario = collection(db, "diccionario_productos");
+ 
+let idEdicion = null;
+let usuarioActual = null;
+let productosDiccionario = [];
+
+// --- LOGIN CON CORREO ---
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Por favor, llena los campos.");
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) { alert("Error al ingresar: " + e.message); }
+});
+
+// --- NUEVO: LOGIN CON GOOGLE ---
+document.getElementById('btnGoogle').addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (e) { alert("Error al conectar con Google: " + e.message); }
+});
+
+document.getElementById('btn堅egistro' || 'btnRegistro').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
+  if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+      alert("¡Cuenta creada exitosamente!");
+    } catch (e) { alert("Error: " + e.message); }
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    usuarioActual = user;
+    document.getElementById('authSeccion').classList.add('hidden');
+    document.getElementById('appContenido').classList.remove('hidden');
+    inicializarListeners();
+    cargarDiccionario();
+  } else {
+    usuarioActual = null;
+    document.getElementById('authSeccion').classList.remove('hidden');
+    document.getElementById('appContenido').classList.add('hidden');
+  }
+});
+ 
+window.cambiarTab = (tab) => {
+  const esList = tab === 'lista';
+  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
+  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
+  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
+  document.getElementById('tabLista').classList.toggle('active', esList);
+  document.getElementById('tabHistorial').classList.toggle('active', !esList);
+};
+
+async function cargarDiccionario() {
+  onSnapshot(colDiccionario, (snap) => {
+    productosDiccionario = snap.docs.map(d => d.data());
+  });
+}
+
+document.getElementById('nombre').addEventListener('input', (e) => {
+  const busqueda = e.target.value.toLowerCase().trim();
+  const box = document.getElementById('sugerencias');
+  box.innerHTML = '';
+  if(!busqueda) { box.style.display = 'none'; return; }
+
+  const filtrados = productosDiccionario.filter(p => p.nombre.toLowerCase().includes(busqueda));
+  if(filtrados.length > 0) {
+    box.style.display = 'block';
+    filtrados.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'sugerencia-item';
+      div.textContent = `${p.nombre} (${p.categoria})`;
+      div.onclick = () => {
+        document.getElementById('nombre').value = p.nombre;
+        document.getElementById('precio').value = p.precio;
+        document.getElementById('categoria').value = p.categoria;
+        box.style.display = 'none';
+      };
+      box.appendChild(div);
+    });
+  } else { box.style.display = 'none'; }
+});
+ 
+let html5QrcodeScanner;
+document.getElementById('btnEscanear').addEventListener('click', () => {
+  const reader = document.getElementById('reader');
+  if(reader.style.display === 'none') {
+    reader.style.display = 'block';
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render((decodedText) => {
+      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
+      if(encontrado) {
+        document.getElementById('nombre').value = encontrado.nombre;
+        document.getElementById('precio').value = encontrado.precio;
+        document.getElementById('categoria').value = encontrado.categoria;
+      } else {
+        document.getElementById('nombre').value = "Código: " + decodedText;
+      }
+      html5QrcodeScanner.clear();
+      reader.style.display = 'none';
+    });
+  } else {
+    html5QrcodeScanner.clear();
+    reader.style.display = 'none';
+  }
+});
+
+const limpiarInputs = () => {
+  document.getElementById('nombre').value = '';
+  document.getElementById('precio').value = '';
+  document.getElementById('piezas').value = '';
+  document.getElementById('categoria').value = 'otro';
+  idEdicion = null;
+  const btn = document.getElementById('btnAgregar');
+  btn.textContent = '+ Agregar a la lista';
+  document.getElementById('btnCancelar').style.display = 'none';
+};
+ 
+function inicializarListeners() {
+  const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
+  onSnapshot(qLista, (snapshot) => {
+    let totalTotal = 0;
+    const pendientes = [];
+    const completados = [];
+   
+    snapshot.docs.forEach(itemDoc => {
+      const item = { id: itemDoc.id, ...itemDoc.data() };
+      const subtotal = item.precio * item.piezas;
+      totalTotal += subtotal;
+
+      if (!item.completado) { pendientes.push(item); } 
+      else { completados.push(item); }
+    });
+   
+    pendientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    completados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+   
+    const cont = document.getElementById('listaContenedor');
+    const contC = document.getElementById('listaCompletados');
+    cont.innerHTML = ''; contC.innerHTML = '';
+   
+    pendientes.forEach(item => cont.appendChild(crearItemEl(item, false)));
+    completados.forEach(item => contC.appendChild(crearItemEl(item, true)));
+   
+    document.getElementById('totalCuenta').textContent = `$${totalTotal.toFixed(2)}`;
+    document.getElementById('completadosWrap').classList.toggle('hidden', completados.length === 0);
+  });
+
+  const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
+  onSnapshot(qHist, (snapshot) => {
+    const cont = document.getElementById('historialContenedor');
+    cont.innerHTML = '';
+    
+    const historialOrdenado = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+    historialOrdenado.sort((a,b) => b.timestamp - a.timestamp);
+
+    historialOrdenado.forEach(c => {
+      const detallesOrdenados = [...c.detalles].sort((a,b) => a.nombre.localeCompare(b.nombre));
+      
+      const div = document.createElement('div');
+      div.className = 'hist-card';
+      div.innerHTML = `
+        <div class="hist-header">
+          <div>
+            <div class="hist-fecha">${c.fecha}</div>
+            <div class="hist-total">$${c.total.toFixed(2)}</div>
+          </div>
+          <button class="hist-del" onclick="eliminarHistorial('${c.id}')">🗑️</button>
+        </div>
+        <details>
+          <summary>Ver ${detallesOrdenados.length} productos</summary>
+          <ul>${detallesOrdenados.map(i => `<li>${i.piezas}× ${i.nombre} [${i.categoria || 'otro'}] — $${(i.precio * i.piezas).toFixed(2)}</li>`).join('')}</ul>
+        </details>
+      `;
+      cont.appendChild(div);
+    });
+  });
+}
+
+document.getElementById('btnAgregar').addEventListener('click', async () => {
+  const nombre = document.getElementById('nombre').value.trim();
+  const precio = parseFloat(document.getElementById('precio').value);
+  const piezas = parseInt(document.getElementById('piezas').value);
+  const categoria = document.getElementById('categoria').value;
+  
+  if (!nombre || isNaN(precio) || isNaN(piezas)) return;
+  
+  if (idEdicion) {
+    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria });
+  } else {
+    await addDoc(colLista, { nombre, precio, piezas, categoria, completado: false, creado: Date.now(), userId: usuarioActual.uid });
+    
+    const existeEnDiccionario = productosDiccionario.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    if(!existeEnDiccionario) {
+      await addDoc(colDiccionario, { nombre, precio, categoria });
+    }
+  }
+  limpiarInputs();
+});
+
+function crearItemEl(item, completado) {
+  const subtotal = item.precio * item.piezas;
+  const div = document.createElement('div');
+  div.className = 'item-card' + (completado ? ' done-item' : '');
+  div.innerHTML = `
+    <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
+    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre}', ${item.precio}, ${item.piezas}, '${item.categoria}')` : ''}">
+      <div class="item-name ${completado ? 'tachado' : ''}">${item.nombre}</div>
+      <div class="item-sub">
+        <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
+        <span class="cat-badge cat-${item.categoria}">${item.categoria}</span>
+      </div>
+    </div>
+    <span class="item-price ${completado ? 'tachado' : ''}">$${subtotal.toFixed(2)}</span>
+    <button class="del-btn" onclick="eliminarItem('${item.id}')">🗑️</button>
+  `;
+  return div;
+}
+
+window.toggleCompletado = async (id, estadoActual) => { await updateDoc(doc(db, "lista_actual", id), { completado: !estadoActual }); };
+window.eliminarItem = async (id) => { if (confirm('¿Eliminar producto?')) await deleteDoc(doc(db, "lista_actual", id)); };
+window.eliminarHistorial = async (id) => { if (confirm('¿Eliminar del historial?')) await deleteDoc(doc(db, "historial", id)); };
+window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
+  idEdicion = id; document.getElementById('nombre').value = nombre; document.getElementById('precio').value = precio;
+  document.getElementById('piezas').value = piezas; document.getElementById('categoria').value = categoria;
+  document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; document.getElementById('btnCancelar').style.display = 'block';
+};
+document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
+
+document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
+  const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
+  if (snap.empty) return alert('Tu lista está vacía.');
+  if (!confirm('¿Guardar esta compra en tu historial?')) return;
+ 
+  const items = snap.docs.map(d => d.data());
+  const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
+ 
+  await addDoc(colHistorial, {
+    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
+    timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
+  });
+  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
+  limpiarInputs();
+});
+</script>
+</body>
+</html>
