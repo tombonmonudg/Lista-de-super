@@ -251,14 +251,15 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   } catch (e) { alert("Error al ingresar: " + e.message); }
 });
 
-// --- NUEVO: LOGIN CON GOOGLE ---
+// --- CORREGIDO: INGRESO CON GOOGLE MEDIANTE REDIRECCIÓN ---
 document.getElementById('btnGoogle').addEventListener('click', async () => {
   try {
+    // Usamos redirección en lugar de Popup para evitar bloqueos del navegador
     await signInWithRedirect(auth, googleProvider);
   } catch (e) { alert("Error al conectar con Google: " + e.message); }
 });
 
-document.getElementById('btn堅egistro' || 'btnRegistro').addEventListener('click', async () => {
+document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
@@ -272,7 +273,8 @@ document.getElementById('btn堅egistro' || 'btnRegistro').addEventListener('clic
 
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-onAuthStateChanged(auth, (user) => {
+// --- ESCUCHAR ESTADO DE LA SESIÓN Y PROCESAR REDIRECCIÓN ---
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     usuarioActual = user;
     document.getElementById('authSeccion').classList.add('hidden');
@@ -283,6 +285,18 @@ onAuthStateChanged(auth, (user) => {
     usuarioActual = null;
     document.getElementById('authSeccion').classList.remove('hidden');
     document.getElementById('appContenido').classList.add('hidden');
+    
+    // Procesar el resultado de la redirección si venimos regresando de Google
+    try {
+      const result = await getRedirectResult(auth);
+      if (result?.user) {
+        console.log("Sesión iniciada con Google tras redirección");
+      }
+    } catch (error) {
+      if (error.code !== 'auth/redirect-cancelled-by-user') {
+        console.error("Error en resultado de redirección:", error);
+      }
+    }
   }
 });
  
