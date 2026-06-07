@@ -1,213 +1,664 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Súper Familiar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: bold; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Súper Familiar - Tu lista de supermercado inteligente">
+<title>Súper Familiar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@scanapp-org/html5-qrcode" type="text/javascript"></script>
+
+<style>
+  /* VARIABLES DE ENTORNO Y TEMAS (CLARO/OSCURO) */
+  :root {
+    --bg: #f0f4f8; --card: #ffffff; --card-border: #e2e8f0; --text: #1a202c;
+    --text-muted: #718096; --text-hint: #a0aec0; --accent: #2563eb;
+    --accent-light: #eff6ff; --green: #059669; --green-light: #ecfdf5;
+    --red: #dc2626; --red-light: #fef2f2; --orange: #d97706;
+    --orange-light: #fffbeb; --tab-active: #2563eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.06); --radius: 16px;
+    --radius-sm: 10px; --font: 'Nunito', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a; --card: #1e293b; --card-border: #334155; --text: #f1f5f9;
+      --text-muted: #94a3b8; --text-hint: #64748b; --accent: #3b82f6;
+      --accent-light: #1e3a5f; --green: #10b981; --green-light: #064e3b;
+      --red: #f87171; --red-light: #450a0a; --orange: #fbbf24;
+      --orange-light: #451a03; --tab-active: #3b82f6;
+    }
+  }
+  
+  /* ESTILOS GENERALES DE LA ESTRUCTURA */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); padding-bottom: 120px; min-height: 100vh; }
+  .app { max-width: 430px; margin: 0 auto; }
+  
+  /* CABECERA (HEADER) Y NAVEGACIÓN */
+  .header { background: var(--card); padding: 20px 20px 0; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .app-name { font-size: 20px; font-weight: 900; }
+  .app-name span { color: var(--accent); }
+  .tabs { display: flex; }
+  .tab-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 700; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; font-family: var(--font); }
+  .tab-btn.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
+  
+  /* ELEMENTOS VISUALES DEL PRESUPUESTO */
+  .budget-chip { font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--accent); transition: opacity .15s; }
+  .budget-chip:hover { opacity: 0.8; }
+  .budget-bar-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
+  .budget-bar-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .budget-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+  .budget-amounts { font-size: 13px; font-weight: 800; }
+  .budget-amounts .spent { color: var(--accent); }
+  .budget-amounts .total-b { color: var(--text-muted); }
+  .bar-track { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .5s ease; }
+  .bar-fill.warn { background: var(--orange); }
+  .bar-fill.over { background: var(--red); }
+  .budget-footer { display: flex; justify-content: space-between; margin-top: 6px; }
+  .budget-footer span { font-size: 11px; font-weight: 700; color: var(--text-hint); }
+  .budget-footer .remaining { color: var(--green); }
+  .budget-footer .over-text { color: var(--red); }
+
+  /* CONTENEDOR PRINCIPAL */
+  .main { padding: 20px; }
+  
+  /* ENTRADAS DE FORMULARIOS CORREGIDAS (INCLUYE .modal input) */
+  .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
+  .form-card input, .form-card select, .modal input { 
+    width: 100%; 
+    padding: 11px 14px; 
+    border: 1.5px solid var(--card-border); 
+    border-radius: var(--radius-sm); 
+    font-size: 14px; 
+    color: var(--text); 
+    background: var(--bg); 
+    margin-bottom: 10px; 
+    outline: none; 
+    transition: border-color 0.2s; 
+    font-family: var(--font); 
+  }
+  .form-card input:focus, .form-card select:focus, .modal input:focus { 
+    border-color: var(--accent); 
+  }
+  .modal-overlay { 
+    display: none !important; 
+    position: fixed; 
+    inset: 0; 
+    z-index: 50; 
+    background: rgba(0,0,0,0.5); 
+    align-items: flex-end; 
+    justify-content: center; 
+  }
+
+  .modal-overlay.open { 
+    display: flex !important; 
+  }
+  .form-row { display: flex; gap: 10px; }
+  
+  /* ESTILOS DE LOS BOTONES DE LA INTERFAZ */
+  .btn-primary { width: 100%; margin-top: 12px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: var(--font); }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+  .btn-cancel { display: none; width: 100%; margin-top: 8px; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
+  .btn-logout { font-family: var(--font); font-size: 12px; font-weight: 700; background: var(--red-light); color: var(--red); border: 1px solid var(--red); padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+  .btn-logout:hover { background: var(--red); color: #fff; }
+  .btn-scan { width: 100%; margin-bottom: 12px; padding: 11px; background: var(--bg); color: var(--text); border: 1.5px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font); transition: background 0.2s; }
+  .btn-scan:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--card); color: var(--text); border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: background 0.15s; font-family: var(--font); }
+  .btn-google:hover { background: var(--accent-light); }
+  .btn-google svg { width: 18px; height: 18px; }
+
+  /* COMPONENTES DE LAS CATEGORÍAS */
+  .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; display: inline-flex; align-items: center; gap: 4px; }
+  .cat-frutas { background: #fee2e2; color: #991b1b; }
+  .cat-verduras { background: #dcfce7; color: #166534; }
+  .cat-lacteos { background: #e0f2fe; color: #0369a1; }
+  .cat-carnes { background: #ffeeec; color: #b91c1c; }
+  .cat-panaderia { background: #fef3c7; color: #92400e; }
+  .cat-bebidas { background: #ffedd5; color: #c2410c; }
+  .cat-limpieza { background: #f3e8ff; color: #6b21a8; }
+  .cat-quimicos { background: #e0e7ff; color: #3730a3; }
+  .cat-congelados { background: #ccfbf1; color: #0f766e; }
+  .cat-otro { background: #f1f5f9; color: #475569; }
+
+  /* TARJETAS DE PRODUCTOS (ITEMS) */
+  .item-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--card-border); display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; }
+  .item-card.done-item { opacity: 0.55; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .item-name.tachado { text-decoration: line-through; color: var(--text-hint); }
+  .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .item-price { font-size: 15px; font-weight: 900; }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
+  .check-btn { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--card-border); background: none; cursor: pointer; }
+  .check-btn.checked { background: var(--green); border-color: var(--green); color: white; display: flex; align-items: center; justify-content: center; }
+  
+  /* CUADRO DE SUGERENCIAS INTEGRADAS (AUTOCOMPLETE) */
+  .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; }
+  .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
+  .sugerencia-item:hover { background: var(--accent-light); }
+
+  /* LISTADO HISTÓRICO DE COMPRAS */
+  .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
+  .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
+  .hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); }
+  .hist-fecha { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+  .hist-total { font-size: 22px; font-weight: 900; color: var(--accent); }
+  .hist-del { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
+  details summary { font-size: 12px; font-weight: 800; color: var(--accent); cursor: pointer; }
+  details ul { margin-top: 8px; padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
+  details li { font-size: 12px; color: var(--text-muted); padding: 2px 0; }
+
+  /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+  .total-label { font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--text-hint); }
+  .total-amount { font-size: 30px; font-weight: 900; color: var(--green); }
+  .btn-save { background: var(--green); color: #fff; border: none; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 900; cursor: pointer; font-family: var(--font); }
+  .hidden { display: none !important; }
+</style>
 </head>
-<body class="bg-gray-100 pb-24 text-gray-800">
-    <div class="max-w-md mx-auto">
-        <div class="flex bg-white shadow-sm sticky top-0 z-30">
-            <button id="tabLista" class="flex-1 py-4 text-center tab-active" onclick="cambiarTab('lista')">Lista Actual</button>
-            <button id="tabHistorial" class="flex-1 py-4 text-center text-gray-500" onclick="cambiarTab('historial')">Historial</button>
+<body>
+<div class="app">
+
+  <div id="authSeccion" class="main">
+    <div class="form-card" style="margin-top: 40px; padding: 30px 20px;">
+      <h2 style="font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 24px; letter-spacing: -0.5px;">🔐 Acceso Familiar</h2>
+      <input id="authEmail" type="email" placeholder="Correo electrónico">
+      <input id="authPassword" type="password" placeholder="Contraseña">
+      <button id="btnLogin" class="btn-primary" style="margin-top: 5px;">Ingresar con Correo</button>
+      <div style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-hint); font-size: 12px; font-weight: 700;">
+        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
+        <span style="padding: 0 10px;">O BIEN</span>
+        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
+      </div>
+      <button id="btnGoogle" class="btn-google">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92(3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Entrar con Google
+      </button>
+      <button id="btnRegistro" class="btn-cancel" style="display: block; width: 100%; margin-top: 20px; text-decoration: underline;">¿No tienes cuenta? Regístrate por correo aquí</button>
+    </div>
+  </div>
+
+  <div id="appContenido" class="hidden">
+    
+    <div class="header">
+      <div class="header-top">
+        <div class="app-name">🛒 Súper<span>Familiar</span></div>
+        <div class="budget-chip" id="budgetChip" onclick="abrirModalPresupuesto()">
+          Presupuesto: <span id="budgetDisplay">Sin definir</span>
+        </div>
+        <button id="btnLogout" class="btn-logout">Salir</button>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista Actual</button>
+        <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">Historial</button>
+      </div>
+    </div>
+   
+    <div class="main">
+      
+      <div id="seccionLista">
+        
+        <div class="budget-bar-card" id="budgetBarCard" style="display:none">
+          <div class="budget-bar-header">
+            <span class="budget-label">Presupuesto</span>
+            <span class="budget-amounts">
+              <span class="spent" id="barSpent">$0</span>
+              <span class="total-b"> / <span id="barMax">$0</span></span>
+            </span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+          <div class="budget-footer">
+            <span id="barPct">0% usado</span>
+            <span class="remaining" id="barRemaining">$0 restante</span>
+          </div>
         </div>
 
-        <div class="p-4">
-            <div id="seccionLista">
-                <h1 class="text-2xl font-bold text-center mb-6 uppercase tracking-wider">🛒 Mi Carrito</h1>
-                <div class="bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200">
-                    <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" class="w-full mb-2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                    <div class="flex gap-2">
-                        <input id="precio" type="number" step="0.01" placeholder="$ Precio" class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                        <input id="piezas" type="number" placeholder="Cant." class="w-1/2 p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
-                    </div>
-                    <button id="btnAgregar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95">
-                        Agregar a la lista
-                    </button>
-                    <button id="btnCancelarEdicion" class="hidden w-full mt-2 text-gray-500 text-sm font-semibold py-1">
-                        Cancelar edición
-                    </button>
-                </div>
-                <div id="listaContenedor" class="space-y-3"></div>
-            </div>
+        <div class="form-card">
+          <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
+          <div id="reader" style="width: 100%; display:none;" class="mb-2"></div>
 
-            <div id="seccionHistorial" class="hidden">
-                <h1 class="text-2xl font-bold text-center mb-6 uppercase tracking-wider">📜 Compras Pasadas</h1>
-                <div id="historialContenedor" class="space-y-4"></div>
-            </div>
+          <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
+          <div id="sugerencias" class="sugerencias-box"></div>
+
+          <div class="form-row">
+            <input id="precio" type="number" step="0.01" placeholder="$ Precio" style="flex:1">
+            <input id="piezas" type="number" placeholder="Cant." style="width:90px">
+          </div>
+          
+          <select id="categoria" class="mt-2" style="margin-bottom:0">
+            <option value="otro">📦 Categoría (Otro)</option>
+            <option value="frutas">Frutas</option>
+            <option value="verduras">Verduras</option>
+            <option value="lacteos">Lácteos</option>
+            <option value="carnes">Carnes</option>
+            <option value="panaderia">Panadería</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="limpieza">Limpieza</option>
+            <option value="quimicos">Químicos</option>
+            <option value="congelados">Congelados</option>
+          </select>
+          <button class="btn-primary" id="btnAgregar">+ Agregar a la lista</button>
+          <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
         </div>
+   
+        <div id="pendientesWrap">
+          <div class="section-label" id="labelPendientes">pendientes</div>
+          <div id="listaContenedor"></div>
+        </div>
+   
+        <div id="completadosWrap" class="hidden">
+          <div class="section-label" id="labelCompletados">completados</div>
+          <div id="listaCompletados"></div>
+        </div>
+      </div>
+   
+      <div id="seccionHistorial" class="hidden">
+        <div id="historialContenedor"></div>
+      </div>
     </div>
 
-    <div id="barraInferior" class="fixed bottom-0 left-0 right-0 bg-white border-t p-5 flex justify-between items-center max-w-md mx-auto shadow-2xl z-20">
-        <div>
-            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none">Total estimado</p>
-            <p class="text-3xl font-black text-green-600" id="totalCuenta">$0.00</p>
-        </div>
-        <button id="btnGuardarCompra" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-2xl font-bold shadow-md transition-all active:scale-95">
-            Guardar
-        </button>
+    <div class="bottom-bar" id="barraInferior">
+      <div>
+        <div class="total-label">Total estimado (Pendientes + Completados)</div>
+        <div class="total-amount" id="totalCuenta">$0.00</div>
+      </div>
+      <button class="btn-save" id="btnGuardarCompra">Guardar compra</button>
     </div>
+  </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>💰 Definir presupuesto</h3>
+    <input id="inputPresupuesto" type="number" step="0.01" placeholder="Ej: 500.00">
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="guardarPresupuesto()">Guardar</button>
+    </div>
+  </div>
+</div>
+ 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+ 
+// INICIALIZACIÓN DE CREDENCIALES DEL BACKEND
+const firebaseConfig = {
+  apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
+  authDomain: "lista-de-super-30116.web.app", // 👈 CAMBIADO: De .firebaseapp.com a .web.app
+  projectId: "lista-de-super-30116",
+  storageBucket: "lista-de-super-30116.firebasestorage.app",
+  messagingSenderId: "686745242098",
+  appId: "1:686745242098:web:a2612a5e2ea4f381e9836b",
+  measurementId: "G-FRYK1VCS83"
+};
+ 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
-            authDomain: "lista-de-super-30116.firebaseapp.com",
-            projectId: "lista-de-super-30116",
-            storageBucket: "lista-de-super-30116.firebasestorage.app",
-            messagingSenderId: "686745242098",
-            appId: "1:686745242098:web:a2612a5e2ea4f381e9836b",
-            measurementId: "G-FRYK1VCS83"
-        };
+const colLista = collection(db, "lista_actual");
+const colHistorial = collection(db, "historial");
+const colDiccionario = collection(db, "diccionario_productos");
+ 
+let idEdicion = null;
+let usuarioActual = null;
+let productosDiccionario = [];
+let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const colLista = collection(db, "lista_actual");
-        const colHistorial = collection(db, "historial");
+const catEmojis = { frutas:'🍎', verduras:'🥦', lacteos:'🥛', carnes:'🥩', panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', quimicos:'🧪', congelados:'🥶', otro:'📦' };
+const catNames = { frutas:'Frutas', verduras:'Verduras', lacteos:'Lácteos', carnes:'Carnes', panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', quimicos:'Químicos', congelados:'Congelados', otro:'Otro' };
 
-        // Estado de edición
-        let idEdicion = null;
+// FLUJO DE CONTROL: INGRESOS Y ACCESOS POR CORREO
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Por favor, llena los campos.");
+  try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
+});
 
-        window.cambiarTab = (tab) => {
-            const secLista = document.getElementById('seccionLista');
-            const secHistorial = document.getElementById('seccionHistorial');
-            const barra = document.getElementById('barraInferior');
-            const btnL = document.getElementById('tabLista');
-            const btnH = document.getElementById('tabHistorial');
-            if(tab === 'lista') {
-                secLista.classList.remove('hidden'); secHistorial.classList.add('hidden'); barra.classList.remove('hidden');
-                btnL.classList.add('tab-active'); btnH.classList.remove('tab-active');
-            } else {
-                secLista.classList.add('hidden'); secHistorial.classList.remove('hidden'); barra.classList.add('hidden');
-                btnL.classList.remove('tab-active'); btnH.classList.add('tab-active');
-            }
-        };
+// ==========================================
+// FLUJO DE CONTROL: ACCIONES DE AUTENTICACIÓN
+// ==========================================
 
-        const limpiarInputs = () => {
-            document.getElementById('nombre').value = '';
-            document.getElementById('precio').value = '';
-            document.getElementById('piezas').value = '';
-            idEdicion = null;
-            document.getElementById('btnAgregar').innerText = "Agregar a la lista";
-            document.getElementById('btnAgregar').classList.replace('bg-orange-500', 'bg-blue-600');
-            document.getElementById('btnCancelarEdicion').classList.add('hidden');
-            document.getElementById('nombre').focus();
-        };
+// INGRESO CON CORREO
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Por favor, llena los campos.");
+  try { 
+    await signInWithEmailAndPassword(auth, email, pass); 
+  } catch (e) { 
+    alert("Error al ingresar: " + e.message); 
+  }
+});
 
-        // --- BOTÓN AGREGAR / ACTUALIZAR ---
-        document.getElementById('btnAgregar').addEventListener('click', async () => {
-            const nombre = document.getElementById('nombre').value;
-            const precio = parseFloat(document.getElementById('precio').value);
-            const piezas = parseInt(document.getElementById('piezas').value);
+// INGRESO CON GOOGLE (REDIRECCIÓN LIMPIA)
+document.getElementById('btnGoogle').addEventListener('click', async () => {
+  try { 
+    await signInWithRedirect(auth, googleProvider); 
+  } catch (e) { 
+    alert("Error al conectar con Google: " + e.message); 
+  }
+});
 
-            if(nombre && !isNaN(precio) && !isNaN(piezas)) {
-                if(idEdicion) {
-                    // MODO EDICIÓN
-                    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas });
-                } else {
-                    // MODO NUEVO
-                    await addDoc(colLista, { nombre, precio, piezas, creado: Date.now() });
-                }
-                limpiarInputs();
-            }
-        });
+// REGISTRO DE CUENTAS NUEVAS POR CORREO
+document.getElementById('btnRegistro').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
+  if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
+    try { 
+      await createUserWithEmailAndPassword(auth, email, pass); 
+      alert("¡Cuenta creada exitosamente!"); 
+    } catch (e) { 
+      alert("Error: " + e.message); 
+    }
+  }
+});
 
-        document.getElementById('btnCancelarEdicion').addEventListener('click', limpiarInputs);
+// CERRAR SESIÓN
+document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-        // --- ESCUCHAR LISTA ACTUAL ---
-        onSnapshot(colLista, (snapshot) => {
-            let total = 0;
-            const contenedor = document.getElementById('listaContenedor');
-            contenedor.innerHTML = '';
-            snapshot.docs.forEach(itemDoc => {
-                const item = itemDoc.data();
-                const subtotal = item.precio * item.piezas;
-                total += subtotal;
-                contenedor.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center animate-fade-in">
-                        <div class="cursor-pointer flex-1" onclick="prepararEdicion('${itemDoc.id}', '${item.nombre}', ${item.precio}, ${item.piezas})">
-                            <p class="font-bold uppercase text-xs">${item.nombre} <span class="text-blue-400 text-[9px]">(Toca para editar)</span></p>
-                            <p class="text-[10px] text-gray-400">${item.piezas} pzas x $${item.precio}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span class="font-black text-lg">$${subtotal.toFixed(2)}</span>
-                            <button onclick="eliminarItem('${itemDoc.id}')" class="text-red-300 hover:text-red-500 p-2 text-xl">🗑️</button>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('totalCuenta').innerText = `$${total.toFixed(2)}`;
-        });
 
-        // --- PREPARAR EDICIÓN ---
-        window.prepararEdicion = (id, nombre, precio, piezas) => {
-            idEdicion = id;
-            document.getElementById('nombre').value = nombre;
-            document.getElementById('precio').value = precio;
-            document.getElementById('piezas').value = piezas;
-            document.getElementById('btnAgregar').innerText = "Actualizar Producto";
-            document.getElementById('btnAgregar').classList.replace('bg-blue-600', 'bg-orange-500');
-            document.getElementById('btnCancelarEdicion').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+// ==========================================
+// CONTROLADOR CENTRAL DE ACCESO Y REDIRECCIÓN
+// ==========================================
 
-        window.eliminarItem = async (id) => { 
-            if(confirm('¿Eliminar producto de la lista?')) {
-                await deleteDoc(doc(db, "lista_actual", id)); 
-            }
-        };
+// FUNCIÓN ASÍNCRONA PARA PROCESAR EL RETORNO DE GOOGLE Y ACTIVAR ESCUCHADORES
+async function inicializarAutenticacion() {
+  // 1. Forzar al navegador a procesar la respuesta que dejó Google en la URL
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log("¡Éxito! Token de Google procesado para el usuario:", result.user.uid);
+      usuarioActual = result.user;
+    }
+  } catch (error) {
+    console.error("Error al procesar la redirección de Google:", error);
+    if (error.code !== 'auth/redirect-cancelled-by-user') {
+      alert("Hubo un problema al regresar de Google: " + error.message);
+    }
+  }
 
-        // --- ESCUCHAR HISTORIAL ---
-        const qH = query(colHistorial, orderBy("timestamp", "desc"));
-        onSnapshot(qH, (snapshot) => {
-            const contenedorH = document.getElementById('historialContenedor');
-            contenedorH.innerHTML = '';
-            snapshot.docs.forEach(docSnap => {
-                const c = docSnap.data();
-                contenedorH.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
-                        <div class="flex justify-between items-start mb-2 border-b pb-2">
-                            <div>
-                                <span class="text-[9px] font-black text-gray-300 uppercase leading-none">${c.fecha}</span>
-                                <div class="text-xl font-black text-blue-600">$${c.total.toFixed(2)}</div>
-                            </div>
-                            <button onclick="eliminarHistorial('${docSnap.id}')" class="text-red-400 hover:text-red-600 p-1">🗑️</button>
-                        </div>
-                        <details class="text-[11px] text-gray-500">
-                            <summary class="cursor-pointer text-blue-400 font-bold">Ver productos</summary>
-                            <ul class="mt-2 space-y-1 bg-gray-50 p-2 rounded-lg">${c.detalles.map(i => `<li>• ${i.piezas}x ${i.nombre} ($${i.precio})</li>`).join('')}</ul>
-                        </details>
-                    </div>`;
-            });
-        });
+  // 2. Escuchar el estado de la sesión en tiempo real (Realtime Auth Listener)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      usuarioActual = user;
+      
+      // Ocultar pantalla de acceso y revelar la aplicación principal
+      document.getElementById('authSeccion').classList.add('hidden');
+      document.getElementById('appContenido').classList.remove('hidden');
+      
+      // Encender sincronización de base de datos en tiempo real
+      inicializarListeners();
+      cargarDiccionario();
+    } else {
+      usuarioActual = null;
+      
+      // Mostrar obligatoriamente el formulario de acceso
+      document.getElementById('authSeccion').classList.remove('hidden');
+      document.getElementById('appContenido').classList.add('hidden');
+    }
+  });
+}
 
-        window.eliminarHistorial = async (id) => {
-            if(confirm('¿Eliminar compra del historial?')) await deleteDoc(doc(db, "historial", id));
-        };
+// EJECUTAR EL NÚCLEO DE AUTENTICACIÓN INMEDIATAMENTE AL CARGAR EL SCRIPT
+inicializarAutenticacion();
 
-        document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
-            const snap = await getDocs(colLista);
-            if(snap.empty) return;
-            if(confirm('¿Guardar esta compra en el historial?')) {
-                const items = snap.docs.map(d => d.data());
-                const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
-                await addDoc(colHistorial, {
-                    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
-                    timestamp: Date.now(), total, detalles: items
-                });
-                const promesas = snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
-                await Promise.all(promesas);
-                limpiarInputs();
-                alert("¡Compra guardada!");
-            }
-        });
-    </script>
+// CONTROLADOR SÍNCRONO: VERIFICADOR DEL ESTADO DE SESIÓN Y REDIRECCIONES DE GOOGLE
+onAuthStateChanged(auth, async (user) => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log("Sesión recuperada exitosamente tras la redirección de Google");
+      usuarioActual = result.user;
+    }
+  } catch (error) {
+    console.error("Error al procesar la redirección de Google:", error);
+    alert("Error de autenticación: " + error.message);
+  }
+
+  if (user || usuarioActual) {
+    if (!usuarioActual) usuarioActual = user;
+    document.getElementById('authSeccion').classList.add('hidden');
+    document.getElementById('appContenido').classList.remove('hidden');
+    inicializarListeners();
+    cargarDiccionario();
+  } else {
+    usuarioActual = null;
+    document.getElementById('authSeccion').classList.remove('hidden');
+    document.getElementById('appContenido').classList.add('hidden');
+  }
+});
+ 
+// NAVEGACIÓN ENTRE PESTAÑAS (SWITCH TABS)
+window.cambiarTab = (tab) => {
+  const esList = tab === 'lista';
+  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
+  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
+  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
+  document.getElementById('tabLista').classList.toggle('active', esList);
+  document.getElementById('tabHistorial').classList.toggle('active', !esList);
+};
+
+// CÁLCULO GENERAL Y MÓDULO DE INTERFAZ DEL PRESUPUESTO
+window.abrirModalPresupuesto = () => {
+  if (presupuesto) document.getElementById('inputPresupuesto').value = presupuesto;
+  document.getElementById('modalOverlay').classList.add('open');
+};
+window.cerrarModal = () => { document.getElementById('modalOverlay').classList.remove('open'); };
+window.guardarPresupuesto = () => {
+  const val = parseFloat(document.getElementById('inputPresupuesto').value);
+  if (!isNaN(val) && val > 0) {
+    presupuesto = val;
+    localStorage.setItem('presupuesto', val);
+    const totalActual = parseFloat(document.getElementById('totalCuenta').innerText.replace('$','')) || 0;
+    actualizarBudgetUI(totalActual);
+  }
+  cerrarModal();
+};
+
+function actualizarBudgetUI(total) {
+  const chip = document.getElementById('budgetDisplay');
+  const card = document.getElementById('budgetBarCard');
+  if (presupuesto > 0) {
+    chip.textContent = `$${presupuesto.toFixed(0)}`;
+    card.style.display = 'block';
+    const pct = Math.min((total / presupuesto) * 100, 100);
+    const remaining = presupuesto - total;
+    document.getElementById('barSpent').textContent = `$${total.toFixed(2)}`;
+    document.getElementById('barMax').textContent = `$${presupuesto.toFixed(2)}`;
+    document.getElementById('barFill').style.width = pct + '%';
+    document.getElementById('barFill').className = 'bar-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
+    document.getElementById('barPct').textContent = `${Math.round(pct)}% usado`;
+    const remEl = document.getElementById('barRemaining');
+    if (remaining >= 0) { remEl.textContent = `$${remaining.toFixed(2)} restante`; remEl.className = 'remaining'; } 
+    else { remEl.textContent = `$${Math.abs(remaining).toFixed(2)} excedido`; remEl.className = 'over-text'; }
+  } else { chip.textContent = 'Sin definir'; card.style.display = 'none'; }
+}
+
+// CONTROLADOR DE INTELIGENCIA DE AUTOCOMPLETADO (DICTIONARY)
+async function cargarDiccionario() {
+  onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
+}
+
+document.getElementById('nombre').addEventListener('input', (e) => {
+  const busqueda = e.target.value.toLowerCase().trim();
+  const box = document.getElementById('sugerencias');
+  box.innerHTML = '';
+  if(!busqueda) { box.style.display = 'none'; return; }
+  const filtrados = productosDiccionario.filter(p => p.nombre.toLowerCase().includes(busqueda));
+  if(filtrados.length > 0) {
+    box.style.display = 'block';
+    filtrados.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'sugerencia-item';
+      div.textContent = `${catEmojis[p.categoria] || '📦'} ${p.nombre}`;
+      div.onclick = () => {
+        document.getElementById('nombre').value = p.nombre;
+        document.getElementById('precio').value = p.precio;
+        document.getElementById('categoria').value = p.categoria;
+        box.style.display = 'none';
+      };
+      box.appendChild(div);
+    });
+  } else { box.style.display = 'none'; }
+});
+ 
+// LÓGICA DE CONTROL DEL ESCÁNER DE CÓDIGOS DE BARRA (HARDWARE/CAMERA)
+let html5QrcodeScanner;
+document.getElementById('btnEscanear').addEventListener('click', () => {
+  const reader = document.getElementById('reader');
+  if(reader.style.display === 'none') {
+    reader.style.display = 'block';
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render((decodedText) => {
+      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
+      if(encontrado) {
+        document.getElementById('nombre').value = encontrado.nombre;
+        document.getElementById('precio').value = encontrado.precio;
+        document.getElementById('categoria').value = encontrado.categoria;
+      } else { document.getElementById('nombre').value = "Código: " + decodedText; }
+      html5QrcodeScanner.clear(); reader.style.display = 'none';
+    });
+  } else { html5QrcodeScanner.clear(); reader.style.display = 'none'; }
+});
+
+const limpiarInputs = () => {
+  document.getElementById('nombre').value = ''; document.getElementById('precio').value = '';
+  document.getElementById('piezas').value = ''; document.getElementById('categoria').value = 'otro';
+  idEdicion = null; document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
+  document.getElementById('btnCancelar').style.display = 'none';
+};
+ 
+// ESCUCHADORES EN TIEMPO REAL (FIRESTORE REALTIME SYNC)
+function inicializarListeners() {
+  const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
+  onSnapshot(qLista, (snapshot) => {
+    let totalTotal = 0;
+    const pendientes = [];
+    const completados = [];
+   
+    snapshot.docs.forEach(itemDoc => {
+      const item = { id: itemDoc.id, ...itemDoc.data() };
+      const subtotal = item.precio * item.piezas;
+      totalTotal += subtotal;
+      if (!item.completado) { pendientes.push(item); } else { completados.push(item); }
+    });
+   
+    pendientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    completados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+   
+    const cont = document.getElementById('listaContenedor');
+    const contC = document.getElementById('listaCompletados');
+    cont.innerHTML = ''; contC.innerHTML = '';
+   
+    pendientes.forEach(item => cont.appendChild(crearItemEl(item, false)));
+    completados.forEach(item => contC.appendChild(crearItemEl(item, true)));
+   
+    document.getElementById('totalCuenta').textContent = `$${totalTotal.toFixed(2)}`;
+    document.getElementById('completadosWrap').classList.toggle('hidden', completados.length === 0);
+    document.getElementById('labelPendientes').textContent = `pendientes · ${pendientes.length}`;
+    document.getElementById('labelCompletados').textContent = `completados · ${completados.length}`;
+    
+    actualizarBudgetUI(totalTotal);
+  });
+
+  const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
+  onSnapshot(qHist, (snapshot) => {
+    const cont = document.getElementById('historialContenedor');
+    cont.innerHTML = '';
+    const historialOrdenado = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+    historialOrdenado.sort((a,b) => b.timestamp - a.timestamp);
+
+    historialOrdenado.forEach(c => {
+      const detallesOrdenados = [...c.detalles].sort((a,b) => a.nombre.localeCompare(b.nombre));
+      const div = document.createElement('div');
+      div.className = 'hist-card';
+      div.innerHTML = `
+        <div class="hist-header">
+          <div><div class="hist-fecha">${c.fecha}</div><div class="hist-total">$${c.total.toFixed(2)}</div></div>
+          <button class="hist-del" onclick="eliminarHistorial('${c.id}')">🗑️</button>
+        </div>
+        <details>
+          <summary>Ver ${detallesOrdenados.length} productos</summary>
+          <ul>${detallesOrdenados.map(i => `<li>${catEmojis[i.categoria || 'otro']} ${i.piezas}× ${i.nombre} — $${(i.precio * i.piezas).toFixed(2)}</li>`).join('')}</ul>
+        </details>`;
+      cont.appendChild(div);
+    });
+  });
+}
+
+// CONTROLADORES DE ACCIONES CRUD (AGREGAR, EDITAR, BORRAR)
+document.getElementById('btnAgregar').addEventListener('click', async () => {
+  const nombre = document.getElementById('nombre').value.trim();
+  const precio = parseFloat(document.getElementById('precio').value);
+  const piezas = parseInt(document.getElementById('piezas').value);
+  const categoria = document.getElementById('categoria').value;
+  if (!nombre || isNaN(precio) || isNaN(piezas)) return;
+  
+  if (idEdicion) {
+    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria });
+  } else {
+    await addDoc(colLista, { nombre, precio, piezas, categoria, completado: false, creado: Date.now(), userId: usuarioActual.uid });
+    const existeEnDiccionario = productosDiccionario.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    if(!existeEnDiccionario) { await addDoc(colDiccionario, { nombre, precio, categoria }); }
+  }
+  limpiarInputs();
+});
+
+function crearItemEl(item, completado) {
+  const subtotal = item.precio * item.piezas;
+  const emoji = catEmojis[item.categoria] || '📦';
+  const div = document.createElement('div');
+  div.className = 'item-card' + (completado ? ' done-item' : '');
+  div.innerHTML = `
+    <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
+    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre}', ${item.precio}, ${item.piezas}, '${item.categoria}')` : ''}">
+      <div class="item-name ${completado ? 'tachado' : ''}">${emoji} ${item.nombre}</div>
+      <div class="item-sub">
+        <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
+        <span class="cat-badge cat-${item.categoria}">${catNames[item.categoria]}</span>
+      </div>
+    </div>
+    <span class="item-price ${completado ? 'tachado' : ''}">$${subtotal.toFixed(2)}</span>
+    <button class="del-btn" onclick="eliminarItem('${item.id}')">🗑️</button>
+  `;
+  return div;
+}
+
+window.toggleCompletado = async (id, estadoActual) => { await updateDoc(doc(db, "lista_actual", id), { completado: !estadoActual }); };
+window.eliminarItem = async (id) => { if (confirm('¿Eliminar producto?')) await deleteDoc(doc(db, "lista_actual", id)); };
+window.eliminarHistorial = async (id) => { if (confirm('¿Eliminar del historial?')) await deleteDoc(doc(db, "historial", id)); };
+window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
+  idEdicion = id; document.getElementById('nombre').value = nombre; document.getElementById('precio').value = precio;
+  document.getElementById('piezas').value = piezas; document.getElementById('categoria').value = categoria;
+  document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; document.getElementById('btnCancelar').style.display = 'block';
+};
+document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
+
+// FINALIZACIÓN DE COMPRA Y VOLCADO AL HISTORIAL
+document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
+  const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
+  if (snap.empty) return alert('Tu lista está vacía.');
+  if (!confirm('¿Guardar esta compra en tu historial?')) return;
+  const items = snap.docs.map(d => d.data());
+  const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
+  await addDoc(colHistorial, {
+    fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
+    timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
+  });
+  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
+  limpiarInputs();
+});
+</script>
 </body>
 </html>
