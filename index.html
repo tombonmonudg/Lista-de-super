@@ -93,6 +93,19 @@
   .tax-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
   .tax-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
+  /* ETIQUETA VISUAL DE CÓDIGO DETECTADO */
+  .code-detected-badge {
+    display: none;
+    font-size: 11px;
+    font-weight: 800;
+    background: var(--orange-light);
+    color: var(--orange);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    border: 1px solid var(--orange);
+  }
+
   .modal-overlay { 
     display: none !important; 
     position: fixed; 
@@ -242,7 +255,10 @@
 
         <div class="form-card" id="formCard">
           <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
-          <div id="reader" style="width: 100%; display:none; margin-bottom: 12px;"></div>
+          <div id="reader" style="width: 100%; display:none; margin-bottom: 12px; border-radius: var(--radius-sm); overflow: hidden;"></div>
+
+          <!-- AVISO DE CÓDIGO DETECTADO EN ESCANEO NUEVO -->
+          <div id="badgeCodigoEscaneado" class="code-detected-badge"></div>
 
           <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
           <div id="sugerencias" class="sugerencias-box"></div>
@@ -341,6 +357,9 @@ let idEdicion = null;
 let usuarioActual = null;
 let productosDiccionario = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
+
+// VARIABLE TEMPORAL PARA ALMACENAR EL CÓDIGO LEÍDO DE UN PRODUCTO NUEVO
+let codigoEscaneadoTemporal = null;
 
 // MAPEO DE CATEGORÍAS
 const catEmojis = { 
@@ -513,6 +532,7 @@ document.getElementById('nombre').addEventListener('input', (e) => {
         evt.stopPropagation();
         document.getElementById('nombre').value = p.nombre;
         document.getElementById('precio').value = p.precio;
+        document.getElementById('piezas').value = 1; // Por defecto 1 pieza al seleccionar
         document.getElementById('categoria').value = p.categoria || 'abarrotes';
         if (p.iva) document.getElementById('chkIva').checked = true;
         if (p.ieps) document.getElementById('chkIeps').checked = true;
@@ -532,38 +552,78 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ESCÁNER DE CÓDIGOS DE BARRA REFACTORIZADO Y CON VERIFICACIÓN SEGURA
-let html5QrcodeScanner = null;
+// ==========================================
+// ESCÁNER REFACTORIZADO CON BÚSQUEDA Y ALTA AUTOMÁTICA
+// ==========================================
+let html5QrCode = null;
 
 document.getElementById('btnEscanear').addEventListener('click', async () => {
-  // Guard Clause: Verificamos que la librería haya cargado en el ámbito global
-  if (typeof window.Html5QrcodeScanner === 'undefined') {
-    return alert("La librería del escáner aún se está cargando o hubo un problema de red. Por favor, intenta de nuevo en un segundo.");
+  if (typeof window.Html5Qrcode === 'undefined') {
+    return alert("La librería del escáner aún se está cargando. Intenta de nuevo en unos momentos.");
   }
 
   const reader = document.getElementById('reader');
-  
+
   if (reader.style.display === 'none') {
     reader.style.display = 'block';
+    html5QrCode = new window.Html5Qrcode("reader");
+
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      // 1. Buscamos si el código escaneado coincide con algún producto del diccionario
+      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
+
+      const badge = document.getElementById('badgeCodigoEscaneado');
+
+      if (encontrado) {
+        // ESCENARIO A: EL PRODUCTO YA EXISTE
+        // Rellenamos el formulario automáticamente y colocamos 1 pieza por defecto
+        document.getElementById('nombre').value = encontrado.nombre;
+        document.getElementById('precio').value = encontrado.precio;
+        document.getElementById('piezas').value = 1;
+        document.getElementById('categoria').value = encontrado.categoria || 'abarrotes';
+        document.getElementById('chkIva').checked = !!encontrado.iva;
+        document.getElementById('chkIeps').checked = !!encontrado.ieps;
+        
+        codigoEscaneadoTemporal = null; // No hace falta vincular un código nuevo
+        badge.style.display = 'none';
+      } else { 
+        // ESCENARIO B: ES UN PRODUCTO NUEVO NO REGISTRADO
+        // Almacenamos el código temporalmente para guardarlo al agregar el producto
+        codigoEscaneadoTemporal = decodedText;
+        
+        badge.textContent = `📷 Código detectado: ${decodedText} (Completa los datos del producto)`;
+        badge.style.display = 'block';
+
+        document.getElementById('nombre').value = '';
+        document.getElementById('precio').value = '';
+        document.getElementById('piezas').value = 1;
+        document.getElementById('nombre').focus(); // Enfocar el campo para facilidad de escritura
+      }
+
+      detenerEscaner();
+    };
+
+    const config = { fps: 10, qrbox: { width: 250, height: 180 } };
+
     try {
-      html5QrcodeScanner = new window.Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-      html5QrcodeScanner.render((decodedText) => {
-        const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
-        if (encontrado) {
-          document.getElementById('nombre').value = encontrado.nombre;
-          document.getElementById('precio').value = encontrado.precio;
-          document.getElementById('categoria').value = encontrado.categoria || 'abarrotes';
-          document.getElementById('chkIva').checked = !!encontrado.iva;
-          document.getElementById('chkIeps').checked = !!encontrado.ieps;
-        } else { 
-          document.getElementById('nombre').value = "Código: " + decodedText; 
-        }
-        detenerEscaner();
-      });
+      await html5QrCode.start(
+        { facingMode: "environment" }, 
+        config, 
+        qrCodeSuccessCallback
+      );
     } catch (err) {
-      console.error("Error al iniciar el escáner:", err);
-      alert("No se pudo iniciar la cámara: " + err.message);
-      reader.style.display = 'none';
+      console.warn("Falla al iniciar cámara trasera con 'environment', usando fallback:", err);
+      try {
+        await html5QrCode.start(
+          { facingMode: "user" }, 
+          config, 
+          qrCodeSuccessCallback
+        );
+      } catch (fallbackErr) {
+        console.error("Error al iniciar cámara:", fallbackErr);
+        alert("No se pudo acceder a la cámara: " + fallbackErr.message);
+        reader.style.display = 'none';
+      }
     }
   } else {
     detenerEscaner();
@@ -572,13 +632,14 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
 
 async function detenerEscaner() {
   const reader = document.getElementById('reader');
-  if (html5QrcodeScanner) {
+  if (html5QrCode) {
     try {
-      await html5QrcodeScanner.clear();
+      await html5QrCode.stop();
+      html5QrCode.clear();
     } catch (e) {
-      console.warn("Error limpiando scanner:", e);
+      console.warn("Error al apagar el escáner:", e);
     }
-    html5QrcodeScanner = null;
+    html5QrCode = null;
   }
   reader.style.display = 'none';
 }
@@ -590,6 +651,11 @@ const limpiarInputs = () => {
   document.getElementById('categoria').value = 'abarrotes';
   document.getElementById('chkIva').checked = false;
   document.getElementById('chkIeps').checked = false;
+  
+  // Limpiar bandera de código escaneado
+  codigoEscaneadoTemporal = null;
+  document.getElementById('badgeCodigoEscaneado').style.display = 'none';
+
   idEdicion = null; 
   document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
   document.getElementById('btnCancelar').style.display = 'none';
@@ -675,7 +741,9 @@ window.actualizarTextoDetails = (el) => {
   summary.textContent = el.open ? "Ocultar lista" : `Ver ${count} productos`;
 };
 
-// CRUD (AGREGAR, EDITAR, BORRAR)
+// ==========================================
+// CRUD Y SINCRONIZACIÓN CON EL DICCIONARIO
+// ==========================================
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
@@ -687,16 +755,31 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
   if (!nombre || isNaN(precio) || isNaN(piezas)) return alert("Revisa el nombre, precio y cantidad.");
   
   if (idEdicion) {
+    // Modo Edición de un elemento de la lista
     await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria, iva, ieps });
   } else {
+    // Modo Registro Nuevo en la Lista
     await addDoc(colLista, { 
       nombre, precio, piezas, categoria, iva, ieps, 
       completado: false, creado: Date.now(), userId: usuarioActual.uid 
     });
     
-    const existeEnDiccionario = productosDiccionario.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
-    if(!existeEnDiccionario) { 
-      await addDoc(colDiccionario, { nombre, precio, categoria, iva, ieps }); 
+    // Verificamos si este producto ya existe en el diccionario
+    const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+
+    if (!productoExistente) { 
+      // Si NO existe en el diccionario, lo creamos guardando su código de barras (si se escaneó uno)
+      const nuevoRegistroDiccionario = { nombre, precio, categoria, iva, ieps };
+      if (codigoEscaneadoTemporal) {
+        nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
+      }
+      await addDoc(colDiccionario, nuevoRegistroDiccionario); 
+    } else if (codigoEscaneadoTemporal && !productoExistente.codigo) {
+      // Si el producto existía por nombre pero NO tenía código de barras asociado, se lo asignamos
+      const snapDic = await getDocs(query(colDiccionario, where("nombre", "==", nombre)));
+      if (!snapDic.empty) {
+        await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), { codigo: codigoEscaneadoTemporal });
+      }
     }
   }
   limpiarInputs();
@@ -760,7 +843,7 @@ document.getElementById('btnGuardarCompra').addEventListener('click', async () =
     timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
   });
   
-  await Promise.all(snap.docs.map(d => deleteDoc(doc(doc(db, "lista_actual", d.id)))));
+  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
   
   // REINICIAR PRESUPUESTO A $0
   presupuesto = 0;
