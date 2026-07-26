@@ -88,8 +88,8 @@
     border-color: var(--accent); 
   }
 
-  /* IMPUESTOS (CHECKBOXES) */
-  .tax-container { display: flex; gap: 15px; margin: 6px 0 12px 2px; }
+  /* CHECKBOXES DE IMPUESTOS INCLUIDOS */
+  .tax-container { display: flex; gap: 15px; margin: 4px 0 12px 2px; }
   .tax-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
   .tax-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
@@ -169,7 +169,7 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS */
+  /* LISTADO HISTÓRICO DE COMPRAS CON DESGLOSE DE IMPUESTOS */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -192,6 +192,11 @@
   .ticket-name { flex-shrink: 0; font-weight: 700; max-width: 65%; color: var(--text); }
   .ticket-dots { flex-grow: 1; border-bottom: 1.5px dashed var(--card-border); margin: 0 8px; height: 1px; }
   .ticket-price { flex-shrink: 0; font-weight: 800; color: var(--text); }
+
+  /* CUADRO DESGLOSE DE IMPUESTOS AL FINAL DEL TICKET */
+  .tax-breakdown-card { margin-top: 12px; padding: 10px 12px; background: var(--card); border: 1px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 11px; }
+  .tax-breakdown-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-muted); font-weight: 600; }
+  .tax-breakdown-row.total-row { border-top: 1px solid var(--card-border); padding-top: 4px; margin-top: 4px; color: var(--text); font-weight: 800; font-size: 12px; }
 
   /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
   .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
@@ -269,14 +274,14 @@
           <div id="sugerencias" class="sugerencias-box"></div>
 
           <div class="form-row">
-            <input id="precio" type="number" step="0.01" placeholder="$ Precio unitario" style="flex:1">
+            <input id="precio" type="number" step="0.01" placeholder="$ Precio Final" style="flex:1">
             <input id="piezas" type="number" placeholder="Cant." style="width:90px">
           </div>
 
-          <!-- SECCIÓN DE IMPUESTOS -->
+          <!-- SECCIÓN DE SELECCIÓN DE IMPUESTOS INCLUIDOS -->
           <div class="tax-container">
-            <label class="tax-label"><input type="checkbox" id="chkIva"> IVA (16%)</label>
-            <label class="tax-label"><input type="checkbox" id="chkIeps"> IEPS (8%)</label>
+            <label class="tax-label"><input type="checkbox" id="chkIva"> Incluye IVA (16%)</label>
+            <label class="tax-label"><input type="checkbox" id="chkIeps"> Incluye IEPS (8%)</label>
           </div>
           
           <select id="categoria" style="margin-bottom:10px">
@@ -376,12 +381,8 @@ const catNames = {
   tocador:'Tocador', congelados:'Congelados', otro:'Otro' 
 };
 
-// DICCIONARIO DE TRADUCCIÓN / NORMALIZACIÓN PARA CATEGORÍAS LEGACY (ANTIGUAS)
-const legacyCatMap = {
-  'frutas': 'frutas_verduras',
-  'verduras': 'frutas_verduras',
-  'quimicos': 'limpieza'
-};
+// DICCIONARIO DE TRADUCCIÓN PARA CATEGORÍAS ANTERIORES
+const legacyCatMap = { 'frutas': 'frutas_verduras', 'verduras': 'frutas_verduras', 'quimicos': 'limpieza' };
 
 function normalizarCategoria(catRaw) {
   if (!catRaw) return 'otro';
@@ -390,12 +391,25 @@ function normalizarCategoria(catRaw) {
   return catNames[catMapped] ? catMapped : 'otro';
 }
 
-// CÁLCULO DE SUBTOTAL CON IMPUESTOS
-function calcularSubtotal(precioUnitario, piezas, tieneIva, tieneIeps) {
-  let factor = 1;
-  if (tieneIva) factor += 0.16;
-  if (tieneIeps) factor += 0.08;
-  return (precioUnitario * piezas) * factor;
+// ==========================================
+// MÓDULO MATEMÁTICO: DESGLOSE DE IMPUESTOS INCLUIDOS
+// ==========================================
+function desglosarImpuestosItem(precioFinal, piezas, tieneIva, tieneIeps) {
+  const montoTotalFinal = precioFinal * piezas;
+  let factorImpuestos = 1;
+  if (tieneIva) factorImpuestos += 0.16;
+  if (tieneIeps) factorImpuestos += 0.08;
+
+  const baseTotal = montoTotalFinal / factorImpuestos;
+  const montoIva = tieneIva ? baseTotal * 0.16 : 0;
+  const montoIeps = tieneIeps ? baseTotal * 0.08 : 0;
+
+  return {
+    totalFinal: montoTotalFinal,
+    base: baseTotal,
+    iva: montoIva,
+    ieps: montoIeps
+  };
 }
 
 // AUTENTICACIÓN
@@ -505,7 +519,7 @@ function actualizarBudgetUI(total) {
   }
 }
 
-// AUTOCOMPLETADO
+// AUTOCOMPLETADO AUTOMÁTICO CON ATRIBUCIÓN DE IMPUESTOS
 async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
@@ -529,8 +543,11 @@ document.getElementById('nombre').addEventListener('input', (e) => {
         document.getElementById('precio').value = p.precio;
         document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = catNorm;
-        if (p.iva) document.getElementById('chkIva').checked = true;
-        if (p.ieps) document.getElementById('chkIeps').checked = true;
+        
+        // 👈 Carga automática de la configuración de impuestos guardada previamente
+        document.getElementById('chkIva').checked = !!p.iva;
+        document.getElementById('chkIeps').checked = !!p.ieps;
+        
         box.style.display = 'none';
       };
       box.appendChild(div);
@@ -544,7 +561,7 @@ document.addEventListener('click', (e) => {
   if (e.target !== inputNombre && !box.contains(e.target)) box.style.display = 'none';
 });
 
-// ESCÁNER
+// ESCÁNER CON RECONOCIMIENTO AUTOMÁTICO DE IMPUESTOS
 let html5QrCode = null;
 document.getElementById('btnEscanear').addEventListener('click', async () => {
   if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
@@ -563,17 +580,22 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         document.getElementById('precio').value = encontrado.precio;
         document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = normalizarCategoria(encontrado.categoria);
+        
+        // 👈 Autoload de impuestos desde el escáner
         document.getElementById('chkIva').checked = !!encontrado.iva;
         document.getElementById('chkIeps').checked = !!encontrado.ieps;
+        
         codigoEscaneadoTemporal = null;
         badge.style.display = 'none';
       } else { 
         codigoEscaneadoTemporal = decodedText;
-        badge.textContent = `📷 Código: ${decodedText} (Completa datos)`;
+        badge.textContent = `📷 Código: ${decodedText} (Completa datos y selecciona impuestos si aplica)`;
         badge.style.display = 'block';
         document.getElementById('nombre').value = '';
         document.getElementById('precio').value = '';
         document.getElementById('piezas').value = 1;
+        document.getElementById('chkIva').checked = false;
+        document.getElementById('chkIeps').checked = false;
         document.getElementById('nombre').focus();
       }
       detenerEscaner();
@@ -620,8 +642,9 @@ function inicializarListeners() {
    
     snapshot.docs.forEach(itemDoc => {
       const item = { id: itemDoc.id, ...itemDoc.data() };
-      const subtotal = calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps);
-      totalTotal += subtotal;
+      // En la lista activa, el total es el Precio Final ingresado * Piezas
+      const subtotalFinal = item.precio * item.piezas;
+      totalTotal += subtotalFinal;
       if (!item.completado) { pendientes.push(item); } else { completados.push(item); }
     });
    
@@ -643,7 +666,7 @@ function inicializarListeners() {
     actualizarBudgetUI(totalTotal);
   });
 
-  // ESCUCHADOR DE HISTORIAL NORMALIZADO
+  // HISTORIAL CON DESGLOSE FINAL DE IMPUESTOS
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
   onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
@@ -655,26 +678,37 @@ function inicializarListeners() {
       const div = document.createElement('div');
       div.className = 'hist-card';
       
+      // Variables acumuladoras globales de impuestos para esta compra
+      let baseAcumulada = 0;
+      let ivaAcumulado = 0;
+      let iepsAcumulado = 0;
+
       // 1. AGRUPAR Y NORMALIZAR POR CATEGORÍA
       const agrupadosPorCategoria = c.detalles.reduce((acc, item) => {
-        // Normalizamos la categoría antes de usarla como clave en el acumulador
         const catClean = normalizarCategoria(item.categoria);
         if (!acc[catClean]) acc[catClean] = [];
         acc[catClean].push(item);
         return acc;
       }, {});
 
-      // 2. CONSTRUIR HTML UNIFICADO POR CATEGORÍA
+      // 2. CONSTRUIR LISTA POR CATEGORÍA Y CALCULAR DESGLOSE
       let htmlCategorias = '';
       
       Object.keys(agrupadosPorCategoria).forEach(catKey => {
         const itemsDeCat = agrupadosPorCategoria[catKey];
         itemsDeCat.sort((a,b) => a.nombre.localeCompare(b.nombre));
 
-        const subtotalCat = itemsDeCat.reduce((sum, item) => sum + calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps), 0);
+        let subtotalCat = 0;
 
         const itemsHtml = itemsDeCat.map(i => {
-          const subtotalItem = calcularSubtotal(i.precio, i.piezas, i.iva, i.ieps);
+          const des = desglosarImpuestosItem(i.precio, i.piezas, i.iva, i.ieps);
+          
+          // Acumulamos para el resumen fiscal del ticket
+          baseAcumulada += des.base;
+          ivaAcumulado += des.iva;
+          iepsAcumulado += des.ieps;
+          subtotalCat += des.totalFinal;
+
           const qtyText = `${i.piezas}× `;
           const unitText = i.piezas > 1 ? ` ($${i.precio.toFixed(2)} c/u)` : '';
           const taxBadge = (i.iva || i.ieps) ? `<span class="tax-badge">${i.iva ? 'IVA ' : ''}${i.ieps ? 'IEPS' : ''}</span>` : '';
@@ -683,7 +717,7 @@ function inicializarListeners() {
             <li class="ticket-item">
               <span class="ticket-name">${qtyText}${i.nombre}${unitText}${taxBadge}</span>
               <span class="ticket-dots"></span>
-              <span class="ticket-price">$${subtotalItem.toFixed(2)}</span>
+              <span class="ticket-price">$${des.totalFinal.toFixed(2)}</span>
             </li>
           `;
         }).join('');
@@ -699,6 +733,16 @@ function inicializarListeners() {
         `;
       });
 
+      // 3. TARJETA RESUMEN DE DESGLOSE DE IMPUESTOS AL FINAL DEL TICKET
+      const htmlDesgloseFiscal = `
+        <div class="tax-breakdown-card">
+          <div class="tax-breakdown-row"><span>Subtotal Neto (Sin Impuestos):</span><span>$${baseAcumulada.toFixed(2)}</span></div>
+          <div class="tax-breakdown-row"><span>IVA Desglosado (16%):</span><span>$${ivaAcumulado.toFixed(2)}</span></div>
+          <div class="tax-breakdown-row"><span>IEPS Desglosado (8%):</span><span>$${iepsAcumulado.toFixed(2)}</span></div>
+          <div class="tax-breakdown-row total-row"><span>Total Pagado:</span><span>$${c.total.toFixed(2)}</span></div>
+        </div>
+      `;
+
       div.innerHTML = `
         <div class="hist-header">
           <div>
@@ -711,6 +755,7 @@ function inicializarListeners() {
           <summary class="summary-btn">Ver ${c.detalles.length} productos</summary>
           <div style="margin-top: 10px; background: var(--bg); padding: 12px; border-radius: var(--radius-sm);">
             ${htmlCategorias}
+            ${htmlDesgloseFiscal}
           </div>
         </details>`;
       cont.appendChild(div);
@@ -721,11 +766,7 @@ function inicializarListeners() {
 // FUNCIONALIDAD: ALTERNAR TEXTO EN ACORDEÓN
 window.actualizarTextoDetails = (el, totalProductos) => {
   const summary = el.querySelector('summary');
-  if (el.open) {
-    summary.textContent = `Ocultar ${totalProductos} productos`;
-  } else {
-    summary.textContent = `Ver ${totalProductos} productos`;
-  }
+  summary.textContent = el.open ? `Ocultar ${totalProductos} productos` : `Ver ${totalProductos} productos`;
 };
 
 // CRUD ACCIONES
@@ -750,26 +791,32 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
     const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 
     if (!productoExistente) { 
+      // 👈 Guardamos el producto y su configuración de impuestos predeterminada en el diccionario
       const nuevoRegistroDiccionario = { nombre, precio, categoria, iva, ieps };
       if (codigoEscaneadoTemporal) nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
       await addDoc(colDiccionario, nuevoRegistroDiccionario); 
-    } else if (codigoEscaneadoTemporal && !productoExistente.codigo) {
+    } else {
+      // 👈 Si ya existía el nombre en el diccionario, actualizamos su precio e impuestos para que se recuerde en el futuro
       const snapDic = await getDocs(query(colDiccionario, where("nombre", "==", nombre)));
-      if (!snapDic.empty) await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), { codigo: codigoEscaneadoTemporal });
+      if (!snapDic.empty) {
+        const updateData = { precio, categoria, iva, ieps };
+        if (codigoEscaneadoTemporal) updateData.codigo = codigoEscaneadoTemporal;
+        await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), updateData);
+      }
     }
   }
   limpiarInputs();
 });
 
 function crearItemEl(item, completado) {
-  const subtotal = calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps);
+  const subtotal = item.precio * item.piezas;
   const catNorm = normalizarCategoria(item.categoria);
   const emoji = catEmojis[catNorm] || '📦';
   
   let taxText = '';
-  if (item.iva && item.ieps) taxText = '<span class="tax-badge">+IVA +IEPS</span>';
-  else if (item.iva) taxText = '<span class="tax-badge">+IVA</span>';
-  else if (item.ieps) taxText = '<span class="tax-badge">+IEPS</span>';
+  if (item.iva && item.ieps) taxText = '<span class="tax-badge">IVA + IEPS</span>';
+  else if (item.iva) taxText = '<span class="tax-badge">IVA</span>';
+  else if (item.ieps) taxText = '<span class="tax-badge">IEPS</span>';
 
   const div = document.createElement('div');
   div.className = 'item-card' + (completado ? ' done-item' : '');
@@ -812,7 +859,7 @@ document.getElementById('btnGuardarCompra').addEventListener('click', async () =
   if (!confirm('¿Guardar esta compra en tu historial?')) return;
   
   const items = snap.docs.map(d => d.data());
-  const total = items.reduce((acc, curr) => acc + calcularSubtotal(curr.precio, curr.piezas, curr.iva, curr.ieps), 0);
+  const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
   
   await addDoc(colHistorial, {
     fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
