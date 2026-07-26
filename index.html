@@ -49,11 +49,12 @@
   .budget-chip { font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--accent); transition: opacity .15s; }
   .budget-chip:hover { opacity: 0.8; }
   .budget-bar-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
-  .budget-bar-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .budget-bar-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
   .budget-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
   .budget-amounts { font-size: 13px; font-weight: 800; }
   .budget-amounts .spent { color: var(--accent); }
   .budget-amounts .total-b { color: var(--text-muted); }
+  .extra-badge { font-size: 10px; font-weight: 900; background: var(--red-light); color: var(--red); padding: 2px 8px; border-radius: 12px; border: 1px solid var(--red); margin-left: 6px; }
   .bar-track { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .5s ease; }
   .bar-fill.warn { background: var(--orange); }
@@ -66,9 +67,9 @@
   /* CONTENEDOR PRINCIPAL */
   .main { padding: 20px; }
   
-  /* ENTRADAS DE FORMULARIOS CORREGIDAS (INCLUYE .modal input) */
+  /* ENTRADAS DE FORMULARIOS Y CHECKBOXES */
   .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
-  .form-card input, .form-card select, .modal input { 
+  .form-card input[type="text"], .form-card input[type="number"], .form-card select, .modal input { 
     width: 100%; 
     padding: 11px 14px; 
     border: 1.5px solid var(--card-border); 
@@ -84,6 +85,12 @@
   .form-card input:focus, .form-card select:focus, .modal input:focus { 
     border-color: var(--accent); 
   }
+
+  /* IMPUESTOS (CHECKBOXES) */
+  .tax-container { display: flex; gap: 15px; margin: 6px 0 12px 2px; }
+  .tax-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+  .tax-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
   .modal-overlay { 
     display: none !important; 
     position: fixed; 
@@ -93,14 +100,17 @@
     align-items: flex-end; 
     justify-content: center; 
   }
+  .modal-overlay.open { display: flex !important; }
+  .modal { background: var(--card); padding: 20px; border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 430px; }
+  .modal h3 { margin-bottom: 12px; font-size: 18px; font-weight: 800; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
+  .btn-modal-cancel { flex: 1; padding: 10px; background: var(--bg); border: none; border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 700; cursor: pointer; }
+  .btn-confirm { flex: 1; padding: 10px; background: var(--accent); border: none; border-radius: var(--radius-sm); color: #fff; font-weight: 800; cursor: pointer; }
 
-  .modal-overlay.open { 
-    display: flex !important; 
-  }
   .form-row { display: flex; gap: 10px; }
   
   /* ESTILOS DE LOS BOTONES DE LA INTERFAZ */
-  .btn-primary { width: 100%; margin-top: 12px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: var(--font); }
+  .btn-primary { width: 100%; margin-top: 8px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: var(--font); }
   .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-cancel { display: none; width: 100%; margin-top: 8px; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
   .btn-logout { font-family: var(--font); font-size: 12px; font-weight: 700; background: var(--red-light); color: var(--red); border: 1px solid var(--red); padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
@@ -113,16 +123,19 @@
 
   /* COMPONENTES DE LAS CATEGORÍAS */
   .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; display: inline-flex; align-items: center; gap: 4px; }
-  .cat-frutas { background: #fee2e2; color: #991b1b; }
-  .cat-verduras { background: #dcfce7; color: #166534; }
+  .cat-abarrotes { background: #fef3c7; color: #92400e; }
+  .cat-frutas_verduras { background: #dcfce7; color: #166534; }
   .cat-lacteos { background: #e0f2fe; color: #0369a1; }
   .cat-carnes { background: #ffeeec; color: #b91c1c; }
-  .cat-panaderia { background: #fef3c7; color: #92400e; }
-  .cat-bebidas { background: #ffedd5; color: #c2410c; }
+  .cat-panaderia { background: #ffedd5; color: #c2410c; }
+  .cat-bebidas { background: #e0e7ff; color: #3730a3; }
   .cat-limpieza { background: #f3e8ff; color: #6b21a8; }
-  .cat-quimicos { background: #e0e7ff; color: #3730a3; }
+  .cat-hogar { background: #f1f5f9; color: #334155; }
+  .cat-tocador { background: #fce7f3; color: #9d174d; }
   .cat-congelados { background: #ccfbf1; color: #0f766e; }
   .cat-otro { background: #f1f5f9; color: #475569; }
+
+  .tax-badge { font-size: 9px; font-weight: 800; background: var(--accent-light); color: var(--accent); padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
 
   /* TARJETAS DE PRODUCTOS (ITEMS) */
   .item-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--card-border); display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; }
@@ -130,18 +143,18 @@
   .item-info { flex: 1; min-width: 0; }
   .item-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
   .item-name.tachado { text-decoration: line-through; color: var(--text-hint); }
-  .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .item-price { font-size: 15px; font-weight: 900; }
   .del-btn { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
   .check-btn { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--card-border); background: none; cursor: pointer; }
   .check-btn.checked { background: var(--green); border-color: var(--green); color: white; display: flex; align-items: center; justify-content: center; }
   
   /* CUADRO DE SUGERENCIAS INTEGRADAS (AUTOCOMPLETE) */
-  .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; }
+  .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; top: 110px; }
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS */
+  /* LISTADO HISTÓRICO DE COMPRAS (FORMATO TICKET) */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -149,9 +162,15 @@
   .hist-fecha { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
   .hist-total { font-size: 22px; font-weight: 900; color: var(--accent); }
   .hist-del { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
-  details summary { font-size: 12px; font-weight: 800; color: var(--accent); cursor: pointer; }
-  details ul { margin-top: 8px; padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
-  details li { font-size: 12px; color: var(--text-muted); padding: 2px 0; }
+  details summary { font-size: 12px; font-weight: 800; color: var(--accent); cursor: pointer; outline: none; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details ul { margin-top: 10px; padding: 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
+  
+  /* ESTILOS TICKET DE PRODUCTOS HISTORIAL */
+  .ticket-item { display: flex; align-items: baseline; font-size: 12px; color: var(--text-muted); padding: 4px 0; }
+  .ticket-name { flex-shrink: 0; font-weight: 700; max-width: 60%; }
+  .ticket-dots { flex-grow: 1; border-bottom: 2px dashed var(--card-border); margin: 0 8px; height: 1px; }
+  .ticket-price { flex-shrink: 0; font-weight: 800; color: var(--text); }
 
   /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
   .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
@@ -176,7 +195,7 @@
         <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
       </div>
       <button id="btnGoogle" class="btn-google">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92(3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Entrar con Google
       </button>
       <button id="btnRegistro" class="btn-cancel" style="display: block; width: 100%; margin-top: 20px; text-decoration: underline;">¿No tienes cuenta? Regístrate por correo aquí</button>
@@ -209,6 +228,7 @@
             <span class="budget-amounts">
               <span class="spent" id="barSpent">$0</span>
               <span class="total-b"> / <span id="barMax">$0</span></span>
+              <span id="extraBadge" class="extra-badge hidden">$0 Extra</span>
             </span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
@@ -218,29 +238,36 @@
           </div>
         </div>
 
-        <div class="form-card">
+        <div class="form-card" id="formCard">
           <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
-          <div id="reader" style="width: 100%; display:none;" class="mb-2"></div>
+          <div id="reader" style="width: 100%; display:none; margin-bottom: 12px;"></div>
 
           <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
           <div id="sugerencias" class="sugerencias-box"></div>
 
           <div class="form-row">
-            <input id="precio" type="number" step="0.01" placeholder="$ Precio" style="flex:1">
+            <input id="precio" type="number" step="0.01" placeholder="$ Precio unitario" style="flex:1">
             <input id="piezas" type="number" placeholder="Cant." style="width:90px">
           </div>
+
+          <!-- SECCIÓN DE IMPUESTOS -->
+          <div class="tax-container">
+            <label class="tax-label"><input type="checkbox" id="chkIva"> IVA (16%)</label>
+            <label class="tax-label"><input type="checkbox" id="chkIeps"> IEPS (8%)</label>
+          </div>
           
-          <select id="categoria" class="mt-2" style="margin-bottom:0">
-            <option value="otro">📦 Categoría (Otro)</option>
-            <option value="frutas">Frutas</option>
-            <option value="verduras">Verduras</option>
-            <option value="lacteos">Lácteos</option>
-            <option value="carnes">Carnes</option>
-            <option value="panaderia">Panadería</option>
-            <option value="bebidas">Bebidas</option>
-            <option value="limpieza">Limpieza</option>
-            <option value="quimicos">Químicos</option>
-            <option value="congelados">Congelados</option>
+          <select id="categoria" style="margin-bottom:10px">
+            <option value="abarrotes">🥫 Abarrotes</option>
+            <option value="frutas_verduras">🍎 Frutas y Verduras</option>
+            <option value="lacteos">🥛 Lácteos</option>
+            <option value="carnes">🥩 Carnes</option>
+            <option value="panaderia">🍞 Panadería</option>
+            <option value="bebidas">🧃 Bebidas</option>
+            <option value="limpieza">🧹 Limpieza</option>
+            <option value="hogar">🏠 Hogar</option>
+            <option value="tocador">🧴 Tocador</option>
+            <option value="congelados">🥶 Congelados</option>
+            <option value="otro">📦 Otro</option>
           </select>
           <button class="btn-primary" id="btnAgregar">+ Agregar a la lista</button>
           <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
@@ -291,7 +318,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, on
 // INICIALIZACIÓN DE CREDENCIALES DEL BACKEND
 const firebaseConfig = {
   apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
-  authDomain: "lista-de-super-30116.web.app", // 👈 CAMBIADO: De .firebaseapp.com a .web.app
+  authDomain: "lista-de-super-30116.web.app",
   projectId: "lista-de-super-30116",
   storageBucket: "lista-de-super-30116.firebasestorage.app",
   messagingSenderId: "686745242098",
@@ -313,22 +340,30 @@ let usuarioActual = null;
 let productosDiccionario = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
 
-const catEmojis = { frutas:'🍎', verduras:'🥦', lacteos:'🥛', carnes:'🥩', panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', quimicos:'🧪', congelados:'🥶', otro:'📦' };
-const catNames = { frutas:'Frutas', verduras:'Verduras', lacteos:'Lácteos', carnes:'Carnes', panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', quimicos:'Químicos', congelados:'Congelados', otro:'Otro' };
+// NUEVO MAPEO DE CATEGORÍAS
+const catEmojis = { 
+  abarrotes:'🥫', frutas_verduras:'🍎', lacteos:'🥛', carnes:'🥩', 
+  panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', hogar:'🏠', 
+  tocador:'🧴', congelados:'🥶', otro:'📦' 
+};
+const catNames = { 
+  abarrotes:'Abarrotes', frutas_verduras:'Frutas y Verduras', lacteos:'Lácteos', carnes:'Carnes', 
+  panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', hogar:'Hogar', 
+  tocador:'Tocador', congelados:'Congelados', otro:'Otro' 
+};
 
-// FLUJO DE CONTROL: INGRESOS Y ACCESOS POR CORREO
-document.getElementById('btnLogin').addEventListener('click', async () => {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass = document.getElementById('authPassword').value;
-  if (!email || !pass) return alert("Por favor, llena los campos.");
-  try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
-});
+// HELPER: CÁLCULO DE SUBTOTAL CON IMPUESTOS
+function calcularSubtotal(precioUnitario, piezas, tieneIva, tieneIeps) {
+  let factor = 1;
+  if (tieneIva) factor += 0.16;
+  if (tieneIeps) factor += 0.08;
+  return (precioUnitario * piezas) * factor;
+}
 
 // ==========================================
 // FLUJO DE CONTROL: ACCIONES DE AUTENTICACIÓN
 // ==========================================
 
-// INGRESO CON CORREO
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -340,7 +375,6 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   }
 });
 
-// INGRESO CON GOOGLE (REDIRECCIÓN LIMPIA)
 document.getElementById('btnGoogle').addEventListener('click', async () => {
   try { 
     await signInWithRedirect(auth, googleProvider); 
@@ -349,7 +383,6 @@ document.getElementById('btnGoogle').addEventListener('click', async () => {
   }
 });
 
-// REGISTRO DE CUENTAS NUEVAS POR CORREO
 document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -364,82 +397,37 @@ document.getElementById('btnRegistro').addEventListener('click', async () => {
   }
 });
 
-// CERRAR SESIÓN
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-
-// ==========================================
-// CONTROLADOR CENTRAL DE ACCESO Y REDIRECCIÓN
-// ==========================================
-
-// FUNCIÓN ASÍNCRONA PARA PROCESAR EL RETORNO DE GOOGLE Y ACTIVAR ESCUCHADORES
+// CONTROLADOR DE ACCESO Y SESIÓN
 async function inicializarAutenticacion() {
-  // 1. Forzar al navegador a procesar la respuesta que dejó Google en la URL
   try {
     const result = await getRedirectResult(auth);
     if (result?.user) {
-      console.log("¡Éxito! Token de Google procesado para el usuario:", result.user.uid);
       usuarioActual = result.user;
     }
   } catch (error) {
-    console.error("Error al procesar la redirección de Google:", error);
-    if (error.code !== 'auth/redirect-cancelled-by-user') {
-      alert("Hubo un problema al regresar de Google: " + error.message);
-    }
+    console.error("Error al procesar la redirección:", error);
   }
 
-  // 2. Escuchar el estado de la sesión en tiempo real (Realtime Auth Listener)
   onAuthStateChanged(auth, (user) => {
     if (user) {
       usuarioActual = user;
-      
-      // Ocultar pantalla de acceso y revelar la aplicación principal
       document.getElementById('authSeccion').classList.add('hidden');
       document.getElementById('appContenido').classList.remove('hidden');
-      
-      // Encender sincronización de base de datos en tiempo real
       inicializarListeners();
       cargarDiccionario();
     } else {
       usuarioActual = null;
-      
-      // Mostrar obligatoriamente el formulario de acceso
       document.getElementById('authSeccion').classList.remove('hidden');
       document.getElementById('appContenido').classList.add('hidden');
     }
   });
 }
 
-// EJECUTAR EL NÚCLEO DE AUTENTICACIÓN INMEDIATAMENTE AL CARGAR EL SCRIPT
 inicializarAutenticacion();
 
-// CONTROLADOR SÍNCRONO: VERIFICADOR DEL ESTADO DE SESIÓN Y REDIRECCIONES DE GOOGLE
-onAuthStateChanged(auth, async (user) => {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) {
-      console.log("Sesión recuperada exitosamente tras la redirección de Google");
-      usuarioActual = result.user;
-    }
-  } catch (error) {
-    console.error("Error al procesar la redirección de Google:", error);
-    alert("Error de autenticación: " + error.message);
-  }
-
-  if (user || usuarioActual) {
-    if (!usuarioActual) usuarioActual = user;
-    document.getElementById('authSeccion').classList.add('hidden');
-    document.getElementById('appContenido').classList.remove('hidden');
-    inicializarListeners();
-    cargarDiccionario();
-  } else {
-    usuarioActual = null;
-    document.getElementById('authSeccion').classList.remove('hidden');
-    document.getElementById('appContenido').classList.add('hidden');
-  }
-});
- 
-// NAVEGACIÓN ENTRE PESTAÑAS (SWITCH TABS)
+// NAVEGACIÓN ENTRE PESTAÑAS
 window.cambiarTab = (tab) => {
   const esList = tab === 'lista';
   document.getElementById('seccionLista').classList.toggle('hidden', !esList);
@@ -449,7 +437,7 @@ window.cambiarTab = (tab) => {
   document.getElementById('tabHistorial').classList.toggle('active', !esList);
 };
 
-// CÁLCULO GENERAL Y MÓDULO DE INTERFAZ DEL PRESUPUESTO
+// CÁLCULO Y MÓDULO DE INTERFAZ DEL PRESUPUESTO
 window.abrirModalPresupuesto = () => {
   if (presupuesto) document.getElementById('inputPresupuesto').value = presupuesto;
   document.getElementById('modalOverlay').classList.add('open');
@@ -469,20 +457,37 @@ window.guardarPresupuesto = () => {
 function actualizarBudgetUI(total) {
   const chip = document.getElementById('budgetDisplay');
   const card = document.getElementById('budgetBarCard');
+  const extraBadge = document.getElementById('extraBadge');
+
   if (presupuesto > 0) {
     chip.textContent = `$${presupuesto.toFixed(0)}`;
     card.style.display = 'block';
     const pct = Math.min((total / presupuesto) * 100, 100);
     const remaining = presupuesto - total;
+    
     document.getElementById('barSpent').textContent = `$${total.toFixed(2)}`;
     document.getElementById('barMax').textContent = `$${presupuesto.toFixed(2)}`;
     document.getElementById('barFill').style.width = pct + '%';
     document.getElementById('barFill').className = 'bar-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
     document.getElementById('barPct').textContent = `${Math.round(pct)}% usado`;
+    
     const remEl = document.getElementById('barRemaining');
-    if (remaining >= 0) { remEl.textContent = `$${remaining.toFixed(2)} restante`; remEl.className = 'remaining'; } 
-    else { remEl.textContent = `$${Math.abs(remaining).toFixed(2)} excedido`; remEl.className = 'over-text'; }
-  } else { chip.textContent = 'Sin definir'; card.style.display = 'none'; }
+    if (remaining >= 0) { 
+      remEl.textContent = `$${remaining.toFixed(2)} restante`; 
+      remEl.className = 'remaining';
+      extraBadge.classList.add('hidden');
+    } else { 
+      const extra = Math.abs(remaining);
+      remEl.textContent = `$${extra.toFixed(2)} excedido`; 
+      remEl.className = 'over-text'; 
+      extraBadge.textContent = `$${extra.toFixed(2)} Extra`;
+      extraBadge.classList.remove('hidden');
+    }
+  } else { 
+    chip.textContent = 'Sin definir'; 
+    card.style.display = 'none'; 
+    extraBadge.classList.add('hidden');
+  }
 }
 
 // CONTROLADOR DE INTELIGENCIA DE AUTOCOMPLETADO (DICTIONARY)
@@ -502,44 +507,87 @@ document.getElementById('nombre').addEventListener('input', (e) => {
       const div = document.createElement('div');
       div.className = 'sugerencia-item';
       div.textContent = `${catEmojis[p.categoria] || '📦'} ${p.nombre}`;
-      div.onclick = () => {
+      div.onclick = (evt) => {
+        evt.stopPropagation();
         document.getElementById('nombre').value = p.nombre;
         document.getElementById('precio').value = p.precio;
-        document.getElementById('categoria').value = p.categoria;
+        document.getElementById('categoria').value = p.categoria || 'abarrotes';
+        if (p.iva) document.getElementById('chkIva').checked = true;
+        if (p.ieps) document.getElementById('chkIeps').checked = true;
         box.style.display = 'none';
       };
       box.appendChild(div);
     });
   } else { box.style.display = 'none'; }
 });
- 
-// LÓGICA DE CONTROL DEL ESCÁNER DE CÓDIGOS DE BARRA (HARDWARE/CAMERA)
-let html5QrcodeScanner;
-document.getElementById('btnEscanear').addEventListener('click', () => {
-  const reader = document.getElementById('reader');
-  if(reader.style.display === 'none') {
-    reader.style.display = 'block';
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render((decodedText) => {
-      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
-      if(encontrado) {
-        document.getElementById('nombre').value = encontrado.nombre;
-        document.getElementById('precio').value = encontrado.precio;
-        document.getElementById('categoria').value = encontrado.categoria;
-      } else { document.getElementById('nombre').value = "Código: " + decodedText; }
-      html5QrcodeScanner.clear(); reader.style.display = 'none';
-    });
-  } else { html5QrcodeScanner.clear(); reader.style.display = 'none'; }
+
+// OCULTAR CUADRO DE SUGERENCIAS AL HACER CLIC FUERA
+document.addEventListener('click', (e) => {
+  const box = document.getElementById('sugerencias');
+  const inputNombre = document.getElementById('nombre');
+  if (e.target !== inputNombre && !box.contains(e.target)) {
+    box.style.display = 'none';
+  }
 });
 
+// ESCÁNER DE CÓDIGOS DE BARRA CORREGIDO
+let html5QrcodeScanner = null;
+document.getElementById('btnEscanear').addEventListener('click', async () => {
+  const reader = document.getElementById('reader');
+  if (reader.style.display === 'none') {
+    reader.style.display = 'block';
+    try {
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      html5QrcodeScanner.render((decodedText) => {
+        const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
+        if (encontrado) {
+          document.getElementById('nombre').value = encontrado.nombre;
+          document.getElementById('precio').value = encontrado.precio;
+          document.getElementById('categoria').value = encontrado.categoria || 'abarrotes';
+          document.getElementById('chkIva').checked = !!encontrado.iva;
+          document.getElementById('chkIeps').checked = !!encontrado.ieps;
+        } else { 
+          document.getElementById('nombre').value = "Código: " + decodedText; 
+        }
+        detenerEscaner();
+      });
+    } catch (err) {
+      console.error("Error al iniciar el escáner:", err);
+      alert("No se pudo iniciar la cámara: " + err.message);
+      reader.style.display = 'none';
+    }
+  } else {
+    detenerEscaner();
+  }
+});
+
+async function detenerEscaner() {
+  const reader = document.getElementById('reader');
+  if (html5QrcodeScanner) {
+    try {
+      await html5QrcodeScanner.clear();
+    } catch (e) {
+      console.warn("Error limpiando scanner:", e);
+    }
+    html5QrcodeScanner = null;
+  }
+  reader.style.display = 'none';
+}
+
 const limpiarInputs = () => {
-  document.getElementById('nombre').value = ''; document.getElementById('precio').value = '';
-  document.getElementById('piezas').value = ''; document.getElementById('categoria').value = 'otro';
-  idEdicion = null; document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
+  document.getElementById('nombre').value = ''; 
+  document.getElementById('precio').value = '';
+  document.getElementById('piezas').value = ''; 
+  document.getElementById('categoria').value = 'abarrotes';
+  document.getElementById('chkIva').checked = false;
+  document.getElementById('chkIeps').checked = false;
+  idEdicion = null; 
+  document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
   document.getElementById('btnCancelar').style.display = 'none';
+  document.getElementById('sugerencias').style.display = 'none';
 };
- 
-// ESCUCHADORES EN TIEMPO REAL (FIRESTORE REALTIME SYNC)
+
+// ESCUCHADORES EN TIEMPO REAL (FIRESTORE)
 function inicializarListeners() {
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
@@ -549,7 +597,7 @@ function inicializarListeners() {
    
     snapshot.docs.forEach(itemDoc => {
       const item = { id: itemDoc.id, ...itemDoc.data() };
-      const subtotal = item.precio * item.piezas;
+      const subtotal = calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps);
       totalTotal += subtotal;
       if (!item.completado) { pendientes.push(item); } else { completados.push(item); }
     });
@@ -583,50 +631,91 @@ function inicializarListeners() {
       const detallesOrdenados = [...c.detalles].sort((a,b) => a.nombre.localeCompare(b.nombre));
       const div = document.createElement('div');
       div.className = 'hist-card';
+      
+      const itemsHtml = detallesOrdenados.map(i => {
+        const subtotal = calcularSubtotal(i.precio, i.piezas, i.iva, i.ieps);
+        const desgloseQty = i.piezas > 1 ? ` (${i.piezas} pzas × $${i.precio.toFixed(2)})` : '';
+        const taxBadge = (i.iva || i.ieps) ? `<span class="tax-badge">${i.iva ? 'IVA ' : ''}${i.ieps ? 'IEPS' : ''}</span>` : '';
+        return `
+          <li class="ticket-item">
+            <span class="ticket-name">${catEmojis[i.categoria || 'otro']} ${i.nombre}${desgloseQty}${taxBadge}</span>
+            <span class="ticket-dots"></span>
+            <span class="ticket-price">$${subtotal.toFixed(2)}</span>
+          </li>
+        `;
+      }).join('');
+
       div.innerHTML = `
         <div class="hist-header">
           <div><div class="hist-fecha">${c.fecha}</div><div class="hist-total">$${c.total.toFixed(2)}</div></div>
           <button class="hist-del" onclick="eliminarHistorial('${c.id}')">🗑️</button>
         </div>
-        <details>
-          <summary>Ver ${detallesOrdenados.length} productos</summary>
-          <ul>${detallesOrdenados.map(i => `<li>${catEmojis[i.categoria || 'otro']} ${i.piezas}× ${i.nombre} — $${(i.precio * i.piezas).toFixed(2)}</li>`).join('')}</ul>
+        <details ontoggle="actualizarTextoDetails(this)">
+          <summary class="summary-btn">Ver ${detallesOrdenados.length} productos</summary>
+          <ul>${itemsHtml}</ul>
         </details>`;
       cont.appendChild(div);
     });
   });
 }
 
-// CONTROLADORES DE ACCIONES CRUD (AGREGAR, EDITAR, BORRAR)
+// ALTERNAR TEXTO DE ACORDEÓN EN HISTORIAL
+window.actualizarTextoDetails = (el) => {
+  const summary = el.querySelector('summary');
+  const count = el.querySelectorAll('li').length;
+  if (el.open) {
+    summary.textContent = "Ocultar lista";
+  } else {
+    summary.textContent = `Ver ${count} productos`;
+  }
+};
+
+// CRUD (AGREGAR, EDITAR, BORRAR)
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
   const piezas = parseInt(document.getElementById('piezas').value);
   const categoria = document.getElementById('categoria').value;
-  if (!nombre || isNaN(precio) || isNaN(piezas)) return;
+  const iva = document.getElementById('chkIva').checked;
+  const ieps = document.getElementById('chkIeps').checked;
+
+  if (!nombre || isNaN(precio) || isNaN(piezas)) return alert("Revisa el nombre, precio y cantidad.");
   
   if (idEdicion) {
-    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria });
+    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria, iva, ieps });
   } else {
-    await addDoc(colLista, { nombre, precio, piezas, categoria, completado: false, creado: Date.now(), userId: usuarioActual.uid });
+    await addDoc(colLista, { 
+      nombre, precio, piezas, categoria, iva, ieps, 
+      completado: false, creado: Date.now(), userId: usuarioActual.uid 
+    });
+    
     const existeEnDiccionario = productosDiccionario.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
-    if(!existeEnDiccionario) { await addDoc(colDiccionario, { nombre, precio, categoria }); }
+    if(!existeEnDiccionario) { 
+      await addDoc(colDiccionario, { nombre, precio, categoria, iva, ieps }); 
+    }
   }
   limpiarInputs();
 });
 
 function crearItemEl(item, completado) {
-  const subtotal = item.precio * item.piezas;
+  const subtotal = calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps);
   const emoji = catEmojis[item.categoria] || '📦';
+  
+  let taxText = '';
+  if (item.iva && item.ieps) taxText = '<span class="tax-badge">+IVA +IEPS</span>';
+  else if (item.iva) taxText = '<span class="tax-badge">+IVA</span>';
+  else if (item.ieps) taxText = '<span class="tax-badge">+IEPS</span>';
+
   const div = document.createElement('div');
   div.className = 'item-card' + (completado ? ' done-item' : '');
   div.innerHTML = `
     <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
-    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre}', ${item.precio}, ${item.piezas}, '${item.categoria}')` : ''}">
+    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', ${item.precio}, ${item.piezas}, '${item.categoria}', ${!!item.iva}, ${!!item.ieps})` : ''}">
       <div class="item-name ${completado ? 'tachado' : ''}">${emoji} ${item.nombre}</div>
       <div class="item-sub">
         <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
-        <span class="cat-badge cat-${item.categoria}">${catNames[item.categoria]}</span>
+        <span class="cat-badge cat-${item.categoria}">${catNames[item.categoria] || 'Otro'}</span>
+        ${taxText}
       </div>
     </div>
     <span class="item-price ${completado ? 'tachado' : ''}">$${subtotal.toFixed(2)}</span>
@@ -638,26 +727,44 @@ function crearItemEl(item, completado) {
 window.toggleCompletado = async (id, estadoActual) => { await updateDoc(doc(db, "lista_actual", id), { completado: !estadoActual }); };
 window.eliminarItem = async (id) => { if (confirm('¿Eliminar producto?')) await deleteDoc(doc(db, "lista_actual", id)); };
 window.eliminarHistorial = async (id) => { if (confirm('¿Eliminar del historial?')) await deleteDoc(doc(db, "historial", id)); };
-window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
-  idEdicion = id; document.getElementById('nombre').value = nombre; document.getElementById('precio').value = precio;
-  document.getElementById('piezas').value = piezas; document.getElementById('categoria').value = categoria;
-  document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; document.getElementById('btnCancelar').style.display = 'block';
+
+window.prepararEdicion = (id, nombre, precio, piezas, categoria, iva, ieps) => {
+  idEdicion = id; 
+  document.getElementById('nombre').value = nombre; 
+  document.getElementById('precio').value = precio;
+  document.getElementById('piezas').value = piezas; 
+  document.getElementById('categoria').value = categoria || 'abarrotes';
+  document.getElementById('chkIva').checked = iva;
+  document.getElementById('chkIeps').checked = ieps;
+  document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; 
+  document.getElementById('btnCancelar').style.display = 'block';
 };
 document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
 
-// FINALIZACIÓN DE COMPRA Y VOLCADO AL HISTORIAL
+// FINALIZAR COMPRA, VOLCAR A HISTORIAL Y REINICIAR PRESUPUESTO
 document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
   const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
   if (snap.empty) return alert('Tu lista está vacía.');
   if (!confirm('¿Guardar esta compra en tu historial?')) return;
+  
   const items = snap.docs.map(d => d.data());
-  const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
+  const total = items.reduce((acc, curr) => acc + calcularSubtotal(curr.precio, curr.piezas, curr.iva, curr.ieps), 0);
+  
   await addDoc(colHistorial, {
     fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
     timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
   });
+  
+  // Limpiar lista actual en Firestore
   await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
+  
+  // REINICIAR PRESUPUESTO A $0
+  presupuesto = 0;
+  localStorage.removeItem('presupuesto');
+  actualizarBudgetUI(0);
+
   limpiarInputs();
+  alert('¡Compra guardada con éxito! El presupuesto se ha reiniciado a $0.');
 });
 </script>
 </body>
