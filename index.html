@@ -169,7 +169,7 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS (FORMATO TICKET) */
+  /* LISTADO HISTÓRICO DE COMPRAS (ESTILO TICKET REFACTORIZADO) */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -177,14 +177,20 @@
   .hist-fecha { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
   .hist-total { font-size: 22px; font-weight: 900; color: var(--accent); }
   .hist-del { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
-  details summary { font-size: 12px; font-weight: 800; color: var(--accent); cursor: pointer; outline: none; list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
-  details ul { margin-top: 10px; padding: 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none;}
   
-  /* ESTILOS TICKET DE PRODUCTOS HISTORIAL */
-  .ticket-item { display: flex; align-items: baseline; font-size: 12px; color: var(--text-muted); padding: 4px 0; }
-  .ticket-name { flex-shrink: 0; font-weight: 700; max-width: 60%; }
-  .ticket-dots { flex-grow: 1; border-bottom: 2px dashed var(--card-border); margin: 0 8px; height: 1px; }
+  details summary { font-size: 13px; font-weight: 800; color: var(--accent); cursor: pointer; outline: none; list-style: none; user-select: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details ul { margin-top: 10px; padding: 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none; }
+
+  /* AGRUPADORES DE CATEGORÍA EN EL HISTORIAL */
+  .hist-cat-block { margin-bottom: 12px; }
+  .hist-cat-block:last-child { margin-bottom: 0; }
+  .hist-cat-title { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-hint); padding-bottom: 4px; margin-bottom: 6px; border-bottom: 1px solid var(--card-border); }
+
+  /* FILAS ESTILO TICKET DE COMPRA AL BORDE DERECHO */
+  .ticket-item { display: flex; align-items: baseline; font-size: 12px; color: var(--text-muted); padding: 3px 0; }
+  .ticket-name { flex-shrink: 0; font-weight: 700; max-width: 65%; color: var(--text); }
+  .ticket-dots { flex-grow: 1; border-bottom: 1.5px dashed var(--card-border); margin: 0 8px; height: 1px; }
   .ticket-price { flex-shrink: 0; font-weight: 800; color: var(--text); }
 
   /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
@@ -257,7 +263,6 @@
           <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
           <div id="reader" style="width: 100%; display:none; margin-bottom: 12px; border-radius: var(--radius-sm); overflow: hidden;"></div>
 
-          <!-- AVISO DE CÓDIGO DETECTADO EN ESCANEO NUEVO -->
           <div id="badgeCodigoEscaneado" class="code-detected-badge"></div>
 
           <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
@@ -357,8 +362,6 @@ let idEdicion = null;
 let usuarioActual = null;
 let productosDiccionario = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
-
-// VARIABLE TEMPORAL PARA ALMACENAR EL CÓDIGO LEÍDO DE UN PRODUCTO NUEVO
 let codigoEscaneadoTemporal = null;
 
 // MAPEO DE CATEGORÍAS
@@ -381,27 +384,16 @@ function calcularSubtotal(precioUnitario, piezas, tieneIva, tieneIeps) {
   return (precioUnitario * piezas) * factor;
 }
 
-// ==========================================
-// FLUJO DE CONTROL: ACCIONES DE AUTENTICACIÓN
-// ==========================================
-
+// AUTENTICACIÓN
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Por favor, llena los campos.");
-  try { 
-    await signInWithEmailAndPassword(auth, email, pass); 
-  } catch (e) { 
-    alert("Error al ingresar: " + e.message); 
-  }
+  try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
 });
 
 document.getElementById('btnGoogle').addEventListener('click', async () => {
-  try { 
-    await signInWithRedirect(auth, googleProvider); 
-  } catch (e) { 
-    alert("Error al conectar con Google: " + e.message); 
-  }
+  try { await signInWithRedirect(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
 });
 
 document.getElementById('btnRegistro').addEventListener('click', async () => {
@@ -409,27 +401,17 @@ document.getElementById('btnRegistro').addEventListener('click', async () => {
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
   if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
-    try { 
-      await createUserWithEmailAndPassword(auth, email, pass); 
-      alert("¡Cuenta creada exitosamente!"); 
-    } catch (e) { 
-      alert("Error: " + e.message); 
-    }
+    try { await createUserWithEmailAndPassword(auth, email, pass); alert("¡Cuenta creada exitosamente!"); } catch (e) { alert("Error: " + e.message); }
   }
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-// CONTROLADOR DE ACCESO Y SESIÓN
 async function inicializarAutenticacion() {
   try {
     const result = await getRedirectResult(auth);
-    if (result?.user) {
-      usuarioActual = result.user;
-    }
-  } catch (error) {
-    console.error("Error al procesar la redirección:", error);
-  }
+    if (result?.user) usuarioActual = result.user;
+  } catch (error) { console.error("Error al procesar redirección:", error); }
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -445,10 +427,9 @@ async function inicializarAutenticacion() {
     }
   });
 }
-
 inicializarAutenticacion();
 
-// NAVEGACIÓN ENTRE PESTAÑAS
+// NAVEGACIÓN Y PRESUPUESTO
 window.cambiarTab = (tab) => {
   const esList = tab === 'lista';
   document.getElementById('seccionLista').classList.toggle('hidden', !esList);
@@ -458,7 +439,6 @@ window.cambiarTab = (tab) => {
   document.getElementById('tabHistorial').classList.toggle('active', !esList);
 };
 
-// CÁLCULO Y MÓDULO DE INTERFAZ DEL PRESUPUESTO
 window.abrirModalPresupuesto = () => {
   if (presupuesto) document.getElementById('inputPresupuesto').value = presupuesto;
   document.getElementById('modalOverlay').classList.add('open');
@@ -511,7 +491,7 @@ function actualizarBudgetUI(total) {
   }
 }
 
-// CONTROLADOR DE INTELIGENCIA DE AUTOCOMPLETADO (DICTIONARY)
+// AUTOCOMPLETADO
 async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
@@ -532,7 +512,7 @@ document.getElementById('nombre').addEventListener('input', (e) => {
         evt.stopPropagation();
         document.getElementById('nombre').value = p.nombre;
         document.getElementById('precio').value = p.precio;
-        document.getElementById('piezas').value = 1; // Por defecto 1 pieza al seleccionar
+        document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = p.categoria || 'abarrotes';
         if (p.iva) document.getElementById('chkIva').checked = true;
         if (p.ieps) document.getElementById('chkIeps').checked = true;
@@ -543,126 +523,79 @@ document.getElementById('nombre').addEventListener('input', (e) => {
   } else { box.style.display = 'none'; }
 });
 
-// OCULTAR CUADRO DE SUGERENCIAS AL HACER CLIC FUERA
 document.addEventListener('click', (e) => {
   const box = document.getElementById('sugerencias');
   const inputNombre = document.getElementById('nombre');
-  if (e.target !== inputNombre && !box.contains(e.target)) {
-    box.style.display = 'none';
-  }
+  if (e.target !== inputNombre && !box.contains(e.target)) box.style.display = 'none';
 });
 
-// ==========================================
-// ESCÁNER REFACTORIZADO CON BÚSQUEDA Y ALTA AUTOMÁTICA
-// ==========================================
+// ESCÁNER
 let html5QrCode = null;
-
 document.getElementById('btnEscanear').addEventListener('click', async () => {
-  if (typeof window.Html5Qrcode === 'undefined') {
-    return alert("La librería del escáner aún se está cargando. Intenta de nuevo en unos momentos.");
-  }
-
+  if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
   const reader = document.getElementById('reader');
 
   if (reader.style.display === 'none') {
     reader.style.display = 'block';
     html5QrCode = new window.Html5Qrcode("reader");
 
-    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-      // 1. Buscamos si el código escaneado coincide con algún producto del diccionario
+    const qrCodeSuccessCallback = (decodedText) => {
       const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
-
       const badge = document.getElementById('badgeCodigoEscaneado');
 
       if (encontrado) {
-        // ESCENARIO A: EL PRODUCTO YA EXISTE
-        // Rellenamos el formulario automáticamente y colocamos 1 pieza por defecto
         document.getElementById('nombre').value = encontrado.nombre;
         document.getElementById('precio').value = encontrado.precio;
         document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = encontrado.categoria || 'abarrotes';
         document.getElementById('chkIva').checked = !!encontrado.iva;
         document.getElementById('chkIeps').checked = !!encontrado.ieps;
-        
-        codigoEscaneadoTemporal = null; // No hace falta vincular un código nuevo
+        codigoEscaneadoTemporal = null;
         badge.style.display = 'none';
       } else { 
-        // ESCENARIO B: ES UN PRODUCTO NUEVO NO REGISTRADO
-        // Almacenamos el código temporalmente para guardarlo al agregar el producto
         codigoEscaneadoTemporal = decodedText;
-        
-        badge.textContent = `📷 Código detectado: ${decodedText} (Completa los datos del producto)`;
+        badge.textContent = `📷 Código: ${decodedText} (Completa datos)`;
         badge.style.display = 'block';
-
         document.getElementById('nombre').value = '';
         document.getElementById('precio').value = '';
         document.getElementById('piezas').value = 1;
-        document.getElementById('nombre').focus(); // Enfocar el campo para facilidad de escritura
+        document.getElementById('nombre').focus();
       }
-
       detenerEscaner();
     };
 
     const config = { fps: 10, qrbox: { width: 250, height: 180 } };
-
     try {
-      await html5QrCode.start(
-        { facingMode: "environment" }, 
-        config, 
-        qrCodeSuccessCallback
-      );
+      await html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
     } catch (err) {
-      console.warn("Falla al iniciar cámara trasera con 'environment', usando fallback:", err);
       try {
-        await html5QrCode.start(
-          { facingMode: "user" }, 
-          config, 
-          qrCodeSuccessCallback
-        );
-      } catch (fallbackErr) {
-        console.error("Error al iniciar cámara:", fallbackErr);
-        alert("No se pudo acceder a la cámara: " + fallbackErr.message);
-        reader.style.display = 'none';
-      }
+        await html5QrCode.start({ facingMode: "user" }, config, qrCodeSuccessCallback);
+      } catch (fErr) { alert("Error cámara: " + fErr.message); reader.style.display = 'none'; }
     }
-  } else {
-    detenerEscaner();
-  }
+  } else { detenerEscaner(); }
 });
 
 async function detenerEscaner() {
   const reader = document.getElementById('reader');
   if (html5QrCode) {
-    try {
-      await html5QrCode.stop();
-      html5QrCode.clear();
-    } catch (e) {
-      console.warn("Error al apagar el escáner:", e);
-    }
+    try { await html5QrCode.stop(); html5QrCode.clear(); } catch (e) {}
     html5QrCode = null;
   }
   reader.style.display = 'none';
 }
 
 const limpiarInputs = () => {
-  document.getElementById('nombre').value = ''; 
-  document.getElementById('precio').value = '';
-  document.getElementById('piezas').value = ''; 
-  document.getElementById('categoria').value = 'abarrotes';
-  document.getElementById('chkIva').checked = false;
-  document.getElementById('chkIeps').checked = false;
-  
-  // Limpiar bandera de código escaneado
+  document.getElementById('nombre').value = ''; document.getElementById('precio').value = '';
+  document.getElementById('piezas').value = ''; document.getElementById('categoria').value = 'abarrotes';
+  document.getElementById('chkIva').checked = false; document.getElementById('chkIeps').checked = false;
   codigoEscaneadoTemporal = null;
   document.getElementById('badgeCodigoEscaneado').style.display = 'none';
-
-  idEdicion = null; 
-  document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
+  idEdicion = null; document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
   document.getElementById('btnCancelar').style.display = 'none';
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// ESCUCHADORES EN TIEMPO REAL (FIRESTORE)
+// LISTENERS Y RENDERIZADO
 function inicializarListeners() {
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
@@ -695,6 +628,7 @@ function inicializarListeners() {
     actualizarBudgetUI(totalTotal);
   });
 
+  // ESCUCHADOR DE HISTORIAL REFACTORIZADO
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
   onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
@@ -703,47 +637,85 @@ function inicializarListeners() {
     historialOrdenado.sort((a,b) => b.timestamp - a.timestamp);
 
     historialOrdenado.forEach(c => {
-      const detallesOrdenados = [...c.detalles].sort((a,b) => a.nombre.localeCompare(b.nombre));
       const div = document.createElement('div');
       div.className = 'hist-card';
       
-      const itemsHtml = detallesOrdenados.map(i => {
-        const subtotal = calcularSubtotal(i.precio, i.piezas, i.iva, i.ieps);
-        const desgloseQty = i.piezas > 1 ? ` (${i.piezas} pzas × $${i.precio.toFixed(2)})` : '';
-        const taxBadge = (i.iva || i.ieps) ? `<span class="tax-badge">${i.iva ? 'IVA ' : ''}${i.ieps ? 'IEPS' : ''}</span>` : '';
-        return `
-          <li class="ticket-item">
-            <span class="ticket-name">${catEmojis[i.categoria || 'otro']} ${i.nombre}${desgloseQty}${taxBadge}</span>
-            <span class="ticket-dots"></span>
-            <span class="ticket-price">$${subtotal.toFixed(2)}</span>
-          </li>
+      // 1. AGRUPAR PRODUCTOS POR CATEGORÍA
+      const agrupadosPorCategoria = c.detalles.reduce((acc, item) => {
+        const catKey = item.categoria || 'otro';
+        if (!acc[catKey]) acc[catKey] = [];
+        acc[catKey].push(item);
+        return acc;
+      }, {});
+
+      // 2. CONSTRUIR HTML POR CADA BLOQUE DE CATEGORÍA CON SUBTOTAL
+      let htmlCategorias = '';
+      
+      Object.keys(agrupadosPorCategoria).forEach(catKey => {
+        const itemsDeCat = agrupadosPorCategoria[catKey];
+        // Ordenar alfabéticamente dentro de la categoría
+        itemsDeCat.sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+        // Calcular subtotal de esta categoría específica
+        const subtotalCat = itemsDeCat.reduce((sum, item) => sum + calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps), 0);
+
+        // Generar items estilo ticket
+        const itemsHtml = itemsDeCat.map(i => {
+          const subtotalItem = calcularSubtotal(i.precio, i.piezas, i.iva, i.ieps);
+          const qtyText = `${i.piezas}× `;
+          const unitText = i.piezas > 1 ? ` ($${i.precio.toFixed(2)} c/u)` : '';
+          const taxBadge = (i.iva || i.ieps) ? `<span class="tax-badge">${i.iva ? 'IVA ' : ''}${i.ieps ? 'IEPS' : ''}</span>` : '';
+
+          return `
+            <li class="ticket-item">
+              <span class="ticket-name">${qtyText}${i.nombre}${unitText}${taxBadge}</span>
+              <span class="ticket-dots"></span>
+              <span class="ticket-price">$${subtotalItem.toFixed(2)}</span>
+            </li>
+          `;
+        }).join('');
+
+        htmlCategorias += `
+          <div class="hist-cat-block">
+            <div class="hist-cat-title">
+              <span>${catEmojis[catKey] || '📦'} ${catNames[catKey] || 'Otro'}</span>
+              <span>$${subtotalCat.toFixed(2)}</span>
+            </div>
+            <ul>${itemsHtml}</ul>
+          </div>
         `;
-      }).join('');
+      });
 
       div.innerHTML = `
         <div class="hist-header">
-          <div><div class="hist-fecha">${c.fecha}</div><div class="hist-total">$${c.total.toFixed(2)}</div></div>
+          <div>
+            <div class="hist-fecha">${c.fecha}</div>
+            <div class="hist-total">$${c.total.toFixed(2)}</div>
+          </div>
           <button class="hist-del" onclick="eliminarHistorial('${c.id}')">🗑️</button>
         </div>
-        <details ontoggle="actualizarTextoDetails(this)">
-          <summary class="summary-btn">Ver ${detallesOrdenados.length} productos</summary>
-          <ul>${itemsHtml}</ul>
+        <details ontoggle="actualizarTextoDetails(this, ${c.detalles.length})">
+          <summary class="summary-btn">Ver ${c.detalles.length} productos</summary>
+          <div style="margin-top: 10px; background: var(--bg); padding: 12px; border-radius: var(--radius-sm);">
+            ${htmlCategorias}
+          </div>
         </details>`;
       cont.appendChild(div);
     });
   });
 }
 
-// ALTERNAR TEXTO DE ACORDEÓN EN HISTORIAL
-window.actualizarTextoDetails = (el) => {
+// FUNCIONALIDAD: ALTERNAR TEXTO EN ACORDEÓN
+window.actualizarTextoDetails = (el, totalProductos) => {
   const summary = el.querySelector('summary');
-  const count = el.querySelectorAll('li').length;
-  summary.textContent = el.open ? "Ocultar lista" : `Ver ${count} productos`;
+  if (el.open) {
+    summary.textContent = `Ocultar ${totalProductos} productos`;
+  } else {
+    summary.textContent = `Ver ${totalProductos} productos`;
+  }
 };
 
-// ==========================================
-// CRUD Y SINCRONIZACIÓN CON EL DICCIONARIO
-// ==========================================
+// CRUD ACCIONES
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
@@ -755,31 +727,22 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
   if (!nombre || isNaN(precio) || isNaN(piezas)) return alert("Revisa el nombre, precio y cantidad.");
   
   if (idEdicion) {
-    // Modo Edición de un elemento de la lista
     await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria, iva, ieps });
   } else {
-    // Modo Registro Nuevo en la Lista
     await addDoc(colLista, { 
       nombre, precio, piezas, categoria, iva, ieps, 
       completado: false, creado: Date.now(), userId: usuarioActual.uid 
     });
     
-    // Verificamos si este producto ya existe en el diccionario
     const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 
     if (!productoExistente) { 
-      // Si NO existe en el diccionario, lo creamos guardando su código de barras (si se escaneó uno)
       const nuevoRegistroDiccionario = { nombre, precio, categoria, iva, ieps };
-      if (codigoEscaneadoTemporal) {
-        nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
-      }
+      if (codigoEscaneadoTemporal) nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
       await addDoc(colDiccionario, nuevoRegistroDiccionario); 
     } else if (codigoEscaneadoTemporal && !productoExistente.codigo) {
-      // Si el producto existía por nombre pero NO tenía código de barras asociado, se lo asignamos
       const snapDic = await getDocs(query(colDiccionario, where("nombre", "==", nombre)));
-      if (!snapDic.empty) {
-        await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), { codigo: codigoEscaneadoTemporal });
-      }
+      if (!snapDic.empty) await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), { codigo: codigoEscaneadoTemporal });
     }
   }
   limpiarInputs();
@@ -829,7 +792,6 @@ window.prepararEdicion = (id, nombre, precio, piezas, categoria, iva, ieps) => {
 };
 document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
 
-// FINALIZAR COMPRA, VOLCAR A HISTORIAL Y REINICIAR PRESUPUESTO
 document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
   const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
   if (snap.empty) return alert('Tu lista está vacía.');
@@ -845,7 +807,6 @@ document.getElementById('btnGuardarCompra').addEventListener('click', async () =
   
   await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
   
-  // REINICIAR PRESUPUESTO A $0
   presupuesto = 0;
   localStorage.removeItem('presupuesto');
   actualizarBudgetUI(0);
