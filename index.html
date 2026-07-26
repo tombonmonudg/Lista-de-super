@@ -7,8 +7,6 @@
 <title>Súper Familiar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
-
-<!-- CDN OFICIAL Y ESTABLE DE HTML5-QRCODE -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
 
 <style>
@@ -51,12 +49,11 @@
   .budget-chip { font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--accent); transition: opacity .15s; }
   .budget-chip:hover { opacity: 0.8; }
   .budget-bar-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
-  .budget-bar-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+  .budget-bar-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
   .budget-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
   .budget-amounts { font-size: 13px; font-weight: 800; }
   .budget-amounts .spent { color: var(--accent); }
   .budget-amounts .total-b { color: var(--text-muted); }
-  .extra-badge { font-size: 10px; font-weight: 900; background: var(--red-light); color: var(--red); padding: 2px 8px; border-radius: 12px; border: 1px solid var(--red); margin-left: 6px; }
   .bar-track { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .5s ease; }
   .bar-fill.warn { background: var(--orange); }
@@ -69,9 +66,9 @@
   /* CONTENEDOR PRINCIPAL */
   .main { padding: 20px; }
   
-  /* ENTRADAS DE FORMULARIOS Y CHECKBOXES */
+  /* ENTRADAS DE FORMULARIOS */
   .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
-  .form-card input[type="text"], .form-card input[type="number"], .form-card select, .modal input { 
+  .form-card input, .form-card select, .modal input { 
     width: 100%; 
     padding: 11px 14px; 
     border: 1.5px solid var(--card-border); 
@@ -88,23 +85,56 @@
     border-color: var(--accent); 
   }
 
-  /* CHECKBOXES DE IMPUESTOS INCLUIDOS */
+  /* ESTILOS HOMOGÉNEOS PARA AUTENTICACIÓN */
+  .auth-container {
+    max-width: 430px;
+    margin: 20px auto 0;
+  }
+  .auth-title {
+    font-size: 22px;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 18px 0;
+    color: var(--text-hint);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
+  }
+  .auth-divider span { padding: 0 12px; }
+  .btn-link {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: var(--font);
+    transition: color 0.2s;
+  }
+  .btn-link:hover { color: var(--accent); }
+
   .tax-container { display: flex; gap: 15px; margin: 4px 0 12px 2px; }
   .tax-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
   .tax-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
-
-  /* ETIQUETA VISUAL DE CÓDIGO DETECTADO */
-  .code-detected-badge {
-    display: none;
-    font-size: 11px;
-    font-weight: 800;
-    background: var(--orange-light);
-    color: var(--orange);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 10px;
-    border: 1px solid var(--orange);
-  }
 
   .modal-overlay { 
     display: none !important; 
@@ -132,7 +162,7 @@
   .btn-logout:hover { background: var(--red); color: #fff; }
   .btn-scan { width: 100%; margin-bottom: 12px; padding: 11px; background: var(--bg); color: var(--text); border: 1.5px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font); transition: background 0.2s; }
   .btn-scan:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-  .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--card); color: var(--text); border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: background 0.15s; font-family: var(--font); }
+  .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--card); color: var(--text); border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background 0.15s; font-family: var(--font); }
   .btn-google:hover { background: var(--accent-light); }
   .btn-google svg { width: 18px; height: 18px; }
 
@@ -169,7 +199,7 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS CON DESGLOSE DE IMPUESTOS */
+  /* LISTADO HISTÓRICO DE COMPRAS */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -182,18 +212,15 @@
   details summary::-webkit-details-marker { display: none; }
   details ul { margin-top: 10px; padding: 12px; background: var(--bg); border-radius: var(--radius-sm); list-style: none; }
 
-  /* AGRUPADORES DE CATEGORÍA EN EL HISTORIAL */
   .hist-cat-block { margin-bottom: 12px; }
   .hist-cat-block:last-child { margin-bottom: 0; }
   .hist-cat-title { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-hint); padding-bottom: 4px; margin-bottom: 6px; border-bottom: 1px solid var(--card-border); }
 
-  /* FILAS ESTILO TICKET DE COMPRA AL BORDE DERECHO */
   .ticket-item { display: flex; align-items: baseline; font-size: 12px; color: var(--text-muted); padding: 3px 0; }
   .ticket-name { flex-shrink: 0; font-weight: 700; max-width: 65%; color: var(--text); }
   .ticket-dots { flex-grow: 1; border-bottom: 1.5px dashed var(--card-border); margin: 0 8px; height: 1px; }
   .ticket-price { flex-shrink: 0; font-weight: 800; color: var(--text); }
 
-  /* CUADRO DESGLOSE DE IMPUESTOS AL FINAL DEL TICKET */
   .tax-breakdown-card { margin-top: 12px; padding: 10px 12px; background: var(--card); border: 1px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 11px; }
   .tax-breakdown-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-muted); font-weight: 600; }
   .tax-breakdown-row.total-row { border-top: 1px solid var(--card-border); padding-top: 4px; margin-top: 4px; color: var(--text); font-weight: 800; font-size: 12px; }
@@ -209,22 +236,26 @@
 <body>
 <div class="app">
 
+  <!-- SECCIÓN DE AUTENTICACIÓN ESTANDARIZADA -->
   <div id="authSeccion" class="main">
-    <div class="form-card" style="margin-top: 40px; padding: 30px 20px;">
-      <h2 style="font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 24px; letter-spacing: -0.5px;">🔐 Acceso Familiar</h2>
-      <input id="authEmail" type="email" placeholder="Correo electrónico">
-      <input id="authPassword" type="password" placeholder="Contraseña">
-      <button id="btnLogin" class="btn-primary" style="margin-top: 5px;">Ingresar con Correo</button>
-      <div style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-hint); font-size: 12px; font-weight: 700;">
-        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
-        <span style="padding: 0 10px;">O BIEN</span>
-        <div style="flex: 1; height: 1px; background: var(--card-border);"></div>
+    <div class="auth-container">
+      <div class="form-card" style="padding: 24px 20px;">
+        <h2 class="auth-title">🔐 Acceso Familiar</h2>
+        <input id="authEmail" type="email" placeholder="Correo electrónico" autocomplete="email">
+        <input id="authPassword" type="password" placeholder="Contraseña" autocomplete="current-password">
+        <button id="btnLogin" class="btn-primary" style="margin-top: 4px;">Ingresar con Correo</button>
+        
+        <div class="auth-divider">
+          <span>O BIEN</span>
+        </div>
+        
+        <button id="btnGoogle" class="btn-google">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Entrar con Google
+        </button>
+        
+        <button id="btnRegistro" class="btn-link">¿No tienes cuenta? Regístrate por correo aquí</button>
       </div>
-      <button id="btnGoogle" class="btn-google">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Entrar con Google
-      </button>
-      <button id="btnRegistro" class="btn-cancel" style="display: block; width: 100%; margin-top: 20px; text-decoration: underline;">¿No tienes cuenta? Regístrate por correo aquí</button>
     </div>
   </div>
 
@@ -239,7 +270,7 @@
         <button id="btnLogout" class="btn-logout">Salir</button>
       </div>
       <div class="tabs">
-        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista actual</button>
+        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista Actual</button>
         <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">Historial</button>
       </div>
     </div>
@@ -265,7 +296,7 @@
         </div>
 
         <div class="form-card" id="formCard">
-          <button id="btnEscanear" class="btn-scan">📷 Escanear código de barras</button>
+          <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
           <div id="reader" style="width: 100%; display:none; margin-bottom: 12px; border-radius: var(--radius-sm); overflow: hidden;"></div>
 
           <div id="badgeCodigoEscaneado" class="code-detected-badge"></div>
@@ -278,7 +309,6 @@
             <input id="piezas" type="number" placeholder="Cant." style="width:90px">
           </div>
 
-          <!-- SECCIÓN DE SELECCIÓN DE IMPUESTOS INCLUIDOS -->
           <div class="tax-container">
             <label class="tax-label"><input type="checkbox" id="chkIva"> Incluye IVA (16%)</label>
             <label class="tax-label"><input type="checkbox" id="chkIeps"> Incluye IEPS (8%)</label>
@@ -343,7 +373,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
  
-// INICIALIZACIÓN DE CREDENCIALES DEL BACKEND
 const firebaseConfig = {
   apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
   authDomain: "lista-de-super-30116.web.app",
@@ -369,7 +398,6 @@ let productosDiccionario = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
 let codigoEscaneadoTemporal = null;
 
-// MAPEO DE CATEGORÍAS
 const catEmojis = { 
   abarrotes:'🥫', frutas_verduras:'🍎', lacteos:'🥛', carnes:'🥩', 
   panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', hogar:'🏠', 
@@ -381,7 +409,6 @@ const catNames = {
   tocador:'Tocador', congelados:'Congelados', otro:'Otro' 
 };
 
-// DICCIONARIO DE TRADUCCIÓN PARA CATEGORÍAS ANTERIORES
 const legacyCatMap = { 'frutas': 'frutas_verduras', 'verduras': 'frutas_verduras', 'quimicos': 'limpieza' };
 
 function normalizarCategoria(catRaw) {
@@ -391,9 +418,6 @@ function normalizarCategoria(catRaw) {
   return catNames[catMapped] ? catMapped : 'otro';
 }
 
-// ==========================================
-// MÓDULO MATEMÁTICO: DESGLOSE DE IMPUESTOS INCLUIDOS
-// ==========================================
 function desglosarImpuestosItem(precioFinal, piezas, tieneIva, tieneIeps) {
   const montoTotalFinal = precioFinal * piezas;
   let factorImpuestos = 1;
@@ -404,12 +428,7 @@ function desglosarImpuestosItem(precioFinal, piezas, tieneIva, tieneIeps) {
   const montoIva = tieneIva ? baseTotal * 0.16 : 0;
   const montoIeps = tieneIeps ? baseTotal * 0.08 : 0;
 
-  return {
-    totalFinal: montoTotalFinal,
-    base: baseTotal,
-    iva: montoIva,
-    ieps: montoIeps
-  };
+  return { totalFinal: montoTotalFinal, base: baseTotal, iva: montoIva, ieps: montoIeps };
 }
 
 // AUTENTICACIÓN
@@ -519,7 +538,7 @@ function actualizarBudgetUI(total) {
   }
 }
 
-// AUTOCOMPLETADO AUTOMÁTICO CON ATRIBUCIÓN DE IMPUESTOS
+// AUTOCOMPLETADO
 async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
@@ -543,11 +562,8 @@ document.getElementById('nombre').addEventListener('input', (e) => {
         document.getElementById('precio').value = p.precio;
         document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = catNorm;
-        
-        // 👈 Carga automática de la configuración de impuestos guardada previamente
         document.getElementById('chkIva').checked = !!p.iva;
         document.getElementById('chkIeps').checked = !!p.ieps;
-        
         box.style.display = 'none';
       };
       box.appendChild(div);
@@ -561,7 +577,7 @@ document.addEventListener('click', (e) => {
   if (e.target !== inputNombre && !box.contains(e.target)) box.style.display = 'none';
 });
 
-// ESCÁNER CON RECONOCIMIENTO AUTOMÁTICO DE IMPUESTOS
+// ESCÁNER
 let html5QrCode = null;
 document.getElementById('btnEscanear').addEventListener('click', async () => {
   if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
@@ -580,16 +596,13 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         document.getElementById('precio').value = encontrado.precio;
         document.getElementById('piezas').value = 1;
         document.getElementById('categoria').value = normalizarCategoria(encontrado.categoria);
-        
-        // 👈 Autoload de impuestos desde el escáner
         document.getElementById('chkIva').checked = !!encontrado.iva;
         document.getElementById('chkIeps').checked = !!encontrado.ieps;
-        
         codigoEscaneadoTemporal = null;
         badge.style.display = 'none';
       } else { 
         codigoEscaneadoTemporal = decodedText;
-        badge.textContent = `📷 Código: ${decodedText} (Completa datos y selecciona impuestos si aplica)`;
+        badge.textContent = `📷 Código: ${decodedText} (Completa datos)`;
         badge.style.display = 'block';
         document.getElementById('nombre').value = '';
         document.getElementById('precio').value = '';
@@ -632,7 +645,7 @@ const limpiarInputs = () => {
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// LISTENERS Y RENDERIZADO EN TIEMPO REAL
+// LISTENERS Y RENDERIZADO
 function inicializarListeners() {
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
@@ -642,7 +655,6 @@ function inicializarListeners() {
    
     snapshot.docs.forEach(itemDoc => {
       const item = { id: itemDoc.id, ...itemDoc.data() };
-      // En la lista activa, el total es el Precio Final ingresado * Piezas
       const subtotalFinal = item.precio * item.piezas;
       totalTotal += subtotalFinal;
       if (!item.completado) { pendientes.push(item); } else { completados.push(item); }
@@ -666,7 +678,6 @@ function inicializarListeners() {
     actualizarBudgetUI(totalTotal);
   });
 
-  // HISTORIAL CON DESGLOSE FINAL DE IMPUESTOS
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
   onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
@@ -678,12 +689,10 @@ function inicializarListeners() {
       const div = document.createElement('div');
       div.className = 'hist-card';
       
-      // Variables acumuladoras globales de impuestos para esta compra
       let baseAcumulada = 0;
       let ivaAcumulado = 0;
       let iepsAcumulado = 0;
 
-      // 1. AGRUPAR Y NORMALIZAR POR CATEGORÍA
       const agrupadosPorCategoria = c.detalles.reduce((acc, item) => {
         const catClean = normalizarCategoria(item.categoria);
         if (!acc[catClean]) acc[catClean] = [];
@@ -691,7 +700,6 @@ function inicializarListeners() {
         return acc;
       }, {});
 
-      // 2. CONSTRUIR LISTA POR CATEGORÍA Y CALCULAR DESGLOSE
       let htmlCategorias = '';
       
       Object.keys(agrupadosPorCategoria).forEach(catKey => {
@@ -703,7 +711,6 @@ function inicializarListeners() {
         const itemsHtml = itemsDeCat.map(i => {
           const des = desglosarImpuestosItem(i.precio, i.piezas, i.iva, i.ieps);
           
-          // Acumulamos para el resumen fiscal del ticket
           baseAcumulada += des.base;
           ivaAcumulado += des.iva;
           iepsAcumulado += des.ieps;
@@ -733,7 +740,6 @@ function inicializarListeners() {
         `;
       });
 
-      // 3. TARJETA RESUMEN DE DESGLOSE DE IMPUESTOS AL FINAL DEL TICKET
       const htmlDesgloseFiscal = `
         <div class="tax-breakdown-card">
           <div class="tax-breakdown-row"><span>Subtotal Neto (Sin Impuestos):</span><span>$${baseAcumulada.toFixed(2)}</span></div>
@@ -763,7 +769,6 @@ function inicializarListeners() {
   });
 }
 
-// FUNCIONALIDAD: ALTERNAR TEXTO EN ACORDEÓN
 window.actualizarTextoDetails = (el, totalProductos) => {
   const summary = el.querySelector('summary');
   summary.textContent = el.open ? `Ocultar ${totalProductos} productos` : `Ver ${totalProductos} productos`;
@@ -791,12 +796,10 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
     const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 
     if (!productoExistente) { 
-      // 👈 Guardamos el producto y su configuración de impuestos predeterminada en el diccionario
       const nuevoRegistroDiccionario = { nombre, precio, categoria, iva, ieps };
       if (codigoEscaneadoTemporal) nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
       await addDoc(colDiccionario, nuevoRegistroDiccionario); 
     } else {
-      // 👈 Si ya existía el nombre en el diccionario, actualizamos su precio e impuestos para que se recuerde en el futuro
       const snapDic = await getDocs(query(colDiccionario, where("nombre", "==", nombre)));
       if (!snapDic.empty) {
         const updateData = { precio, categoria, iva, ieps };
