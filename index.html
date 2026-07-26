@@ -169,7 +169,7 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS (ESTILO TICKET REFACTORIZADO) */
+  /* LISTADO HISTÓRICO DE COMPRAS */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -376,6 +376,20 @@ const catNames = {
   tocador:'Tocador', congelados:'Congelados', otro:'Otro' 
 };
 
+// DICCIONARIO DE TRADUCCIÓN / NORMALIZACIÓN PARA CATEGORÍAS LEGACY (ANTIGUAS)
+const legacyCatMap = {
+  'frutas': 'frutas_verduras',
+  'verduras': 'frutas_verduras',
+  'quimicos': 'limpieza'
+};
+
+function normalizarCategoria(catRaw) {
+  if (!catRaw) return 'otro';
+  const catClean = catRaw.toLowerCase().trim();
+  const catMapped = legacyCatMap[catClean] || catClean;
+  return catNames[catMapped] ? catMapped : 'otro';
+}
+
 // CÁLCULO DE SUBTOTAL CON IMPUESTOS
 function calcularSubtotal(precioUnitario, piezas, tieneIva, tieneIeps) {
   let factor = 1;
@@ -505,15 +519,16 @@ document.getElementById('nombre').addEventListener('input', (e) => {
   if(filtrados.length > 0) {
     box.style.display = 'block';
     filtrados.forEach(p => {
+      const catNorm = normalizarCategoria(p.categoria);
       const div = document.createElement('div');
       div.className = 'sugerencia-item';
-      div.textContent = `${catEmojis[p.categoria] || '📦'} ${p.nombre}`;
+      div.textContent = `${catEmojis[catNorm] || '📦'} ${p.nombre}`;
       div.onclick = (evt) => {
         evt.stopPropagation();
         document.getElementById('nombre').value = p.nombre;
         document.getElementById('precio').value = p.precio;
         document.getElementById('piezas').value = 1;
-        document.getElementById('categoria').value = p.categoria || 'abarrotes';
+        document.getElementById('categoria').value = catNorm;
         if (p.iva) document.getElementById('chkIva').checked = true;
         if (p.ieps) document.getElementById('chkIeps').checked = true;
         box.style.display = 'none';
@@ -547,7 +562,7 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         document.getElementById('nombre').value = encontrado.nombre;
         document.getElementById('precio').value = encontrado.precio;
         document.getElementById('piezas').value = 1;
-        document.getElementById('categoria').value = encontrado.categoria || 'abarrotes';
+        document.getElementById('categoria').value = normalizarCategoria(encontrado.categoria);
         document.getElementById('chkIva').checked = !!encontrado.iva;
         document.getElementById('chkIeps').checked = !!encontrado.ieps;
         codigoEscaneadoTemporal = null;
@@ -595,7 +610,7 @@ const limpiarInputs = () => {
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// LISTENERS Y RENDERIZADO
+// LISTENERS Y RENDERIZADO EN TIEMPO REAL
 function inicializarListeners() {
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
@@ -628,7 +643,7 @@ function inicializarListeners() {
     actualizarBudgetUI(totalTotal);
   });
 
-  // ESCUCHADOR DE HISTORIAL REFACTORIZADO
+  // ESCUCHADOR DE HISTORIAL NORMALIZADO
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
   onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
@@ -640,26 +655,24 @@ function inicializarListeners() {
       const div = document.createElement('div');
       div.className = 'hist-card';
       
-      // 1. AGRUPAR PRODUCTOS POR CATEGORÍA
+      // 1. AGRUPAR Y NORMALIZAR POR CATEGORÍA
       const agrupadosPorCategoria = c.detalles.reduce((acc, item) => {
-        const catKey = item.categoria || 'otro';
-        if (!acc[catKey]) acc[catKey] = [];
-        acc[catKey].push(item);
+        // Normalizamos la categoría antes de usarla como clave en el acumulador
+        const catClean = normalizarCategoria(item.categoria);
+        if (!acc[catClean]) acc[catClean] = [];
+        acc[catClean].push(item);
         return acc;
       }, {});
 
-      // 2. CONSTRUIR HTML POR CADA BLOQUE DE CATEGORÍA CON SUBTOTAL
+      // 2. CONSTRUIR HTML UNIFICADO POR CATEGORÍA
       let htmlCategorias = '';
       
       Object.keys(agrupadosPorCategoria).forEach(catKey => {
         const itemsDeCat = agrupadosPorCategoria[catKey];
-        // Ordenar alfabéticamente dentro de la categoría
         itemsDeCat.sort((a,b) => a.nombre.localeCompare(b.nombre));
 
-        // Calcular subtotal de esta categoría específica
         const subtotalCat = itemsDeCat.reduce((sum, item) => sum + calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps), 0);
 
-        // Generar items estilo ticket
         const itemsHtml = itemsDeCat.map(i => {
           const subtotalItem = calcularSubtotal(i.precio, i.piezas, i.iva, i.ieps);
           const qtyText = `${i.piezas}× `;
@@ -750,7 +763,8 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
 
 function crearItemEl(item, completado) {
   const subtotal = calcularSubtotal(item.precio, item.piezas, item.iva, item.ieps);
-  const emoji = catEmojis[item.categoria] || '📦';
+  const catNorm = normalizarCategoria(item.categoria);
+  const emoji = catEmojis[catNorm] || '📦';
   
   let taxText = '';
   if (item.iva && item.ieps) taxText = '<span class="tax-badge">+IVA +IEPS</span>';
@@ -761,11 +775,11 @@ function crearItemEl(item, completado) {
   div.className = 'item-card' + (completado ? ' done-item' : '');
   div.innerHTML = `
     <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
-    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', ${item.precio}, ${item.piezas}, '${item.categoria}', ${!!item.iva}, ${!!item.ieps})` : ''}">
+    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', ${item.precio}, ${item.piezas}, '${catNorm}', ${!!item.iva}, ${!!item.ieps})` : ''}">
       <div class="item-name ${completado ? 'tachado' : ''}">${emoji} ${item.nombre}</div>
       <div class="item-sub">
         <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
-        <span class="cat-badge cat-${item.categoria}">${catNames[item.categoria] || 'Otro'}</span>
+        <span class="cat-badge cat-${catNorm}">${catNames[catNorm] || 'Otro'}</span>
         ${taxText}
       </div>
     </div>
@@ -784,7 +798,7 @@ window.prepararEdicion = (id, nombre, precio, piezas, categoria, iva, ieps) => {
   document.getElementById('nombre').value = nombre; 
   document.getElementById('precio').value = precio;
   document.getElementById('piezas').value = piezas; 
-  document.getElementById('categoria').value = categoria || 'abarrotes';
+  document.getElementById('categoria').value = normalizarCategoria(categoria);
   document.getElementById('chkIva').checked = iva;
   document.getElementById('chkIeps').checked = ieps;
   document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; 
