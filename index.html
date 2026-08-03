@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Súper Familiar - Tu lista de supermercado inteligente">
+<meta name="description" content="Súper Familiar - Tu lista inteligente">
 <title>Súper Familiar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
 
 <style>
-  /* VARIABLES DE ENTORNO Y TEMAS (CLARO/OSCURO) */
   :root {
     --bg: #f0f4f8; --card: #ffffff; --card-border: #e2e8f0; --text: #1a202c;
     --text-muted: #718096; --text-hint: #a0aec0; --accent: #2563eb;
@@ -31,12 +30,10 @@
     }
   }
   
-  /* ESTILOS GENERALES DE LA ESTRUCTURA */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--bg); color: var(--text); padding-bottom: 120px; min-height: 100vh; }
   .app { max-width: 430px; margin: 0 auto; }
   
-  /* CABECERA (HEADER) Y NAVEGACIÓN EN 3 PESTAÑAS */
   .header { background: var(--card); padding: 20px 20px 0; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .app-name { font-size: 20px; font-weight: 900; }
@@ -45,7 +42,6 @@
   .tab-btn { flex: 1; padding: 12px 0; font-size: 13px; font-weight: 800; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; font-family: var(--font); text-align: center; }
   .tab-btn.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
   
-  /* ELEMENTOS VISUALES DEL PRESUPUESTO */
   .budget-chip { font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--accent); transition: opacity .15s; }
   .budget-chip:hover { opacity: 0.8; }
   .budget-bar-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -64,29 +60,12 @@
   .budget-footer .remaining { color: var(--green); }
   .budget-footer .over-text { color: var(--red); }
 
-  /* CONTENEDOR PRINCIPAL */
   .main { padding: 20px; }
   
-  /* ENTRADAS DE FORMULARIOS */
   .form-card { background: var(--card); border-radius: var(--radius); padding: 18px; margin-bottom: 20px; border: 1px solid var(--card-border); box-shadow: var(--shadow); position: relative;}
-  .form-card input, .form-card select, .modal input { 
-    width: 100%; 
-    padding: 11px 14px; 
-    border: 1.5px solid var(--card-border); 
-    border-radius: var(--radius-sm); 
-    font-size: 14px; 
-    color: var(--text); 
-    background: var(--bg); 
-    margin-bottom: 10px; 
-    outline: none; 
-    transition: border-color 0.2s; 
-    font-family: var(--font); 
-  }
-  .form-card input:focus, .form-card select:focus, .modal input:focus { 
-    border-color: var(--accent); 
-  }
+  .form-card input, .form-card select, .modal input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--card-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--text); background: var(--bg); margin-bottom: 10px; outline: none; transition: border-color 0.2s; font-family: var(--font); }
+  .form-card input:focus, .form-card select:focus, .modal input:focus { border-color: var(--accent); }
 
-  /* ESTILOS HOMOGÉNEOS PARA AUTENTICACIÓN */
   .auth-container { max-width: 430px; margin: 20px auto 0; }
   .auth-title { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 20px; letter-spacing: -0.5px; color: var(--text); }
   .auth-divider { display: flex; align-items: center; text-align: center; margin: 18px 0; color: var(--text-hint); font-size: 11px; font-weight: 800; letter-spacing: 0.05em; }
@@ -96,6 +75,10 @@
   .btn-link:hover { color: var(--accent); }
 
   .code-detected-badge { display: none; font-size: 11px; font-weight: 800; background: var(--orange-light); color: var(--orange); padding: 6px 10px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--orange); }
+
+  /* COMPONENTE NOTIFICACIÓN TOAST (FEEDBACK ESCÁNER) */
+  .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 800; z-index: 100; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; text-align: center; box-shadow: var(--shadow); }
+  .toast.show { opacity: 1; }
 
   .modal-overlay { display: none !important; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5); align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex !important; }
@@ -107,7 +90,6 @@
 
   .form-row { display: flex; gap: 10px; }
   
-  /* ESTILOS DE LOS BOTONES DE LA INTERFAZ */
   .btn-primary { width: 100%; margin-top: 8px; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: var(--font); }
   .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-cancel { display: none; width: 100%; margin-top: 8px; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); }
@@ -119,7 +101,6 @@
   .btn-google:hover { background: var(--accent-light); }
   .btn-google svg { width: 18px; height: 18px; }
 
-  /* COMPONENTES DE LAS CATEGORÍAS Y TARJETAS */
   .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; display: inline-flex; align-items: center; gap: 4px; }
   .cat-abarrotes { background: #fef3c7; color: #92400e; }
   .cat-frutas_verduras { background: #dcfce7; color: #166534; }
@@ -145,7 +126,6 @@
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* HISTORIAL */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -177,6 +157,9 @@
 <body>
 <div class="app">
 
+  <!-- TOAST DE NOTIFICACIÓN GLOBAL -->
+  <div id="toastNotificacion" class="toast"></div>
+
   <!-- SECCIÓN DE AUTENTICACIÓN ESTANDARIZADA -->
   <div id="authSeccion" class="main">
     <div class="auth-container">
@@ -206,7 +189,7 @@
       <div class="header-top">
         <div class="app-name">🛒 Súper<span>Familiar</span></div>
         <div class="budget-chip" id="budgetChip" onclick="abrirModalPresupuesto()">
-          Sin definir
+          Definir presupuesto
         </div>
         <button id="btnLogout" class="btn-logout">Salir</button>
       </div>
@@ -239,7 +222,6 @@
             <option value="congelados">🥶 Congelados</option>
             <option value="otro">📦 Otro</option>
           </select>
-          <!-- BOTÓN CORREGIDO -->
           <button type="button" class="btn-primary" id="btnAgregarRecordatorio">+ Agregar artículo</button>
         </div>
 
@@ -360,22 +342,17 @@ let idEdicion = null;
 let usuarioActual = null;
 let productosDiccionario = [];
 let productosEnCarritoMemoria = [];
-// Inicializamos en 0, lo cargaremos específicamente por usuario después de loguearse
 let presupuesto = 0; 
 let codigoEscaneadoTemporal = null;
-let procesandoEscaneo = false; // Candado para evitar duplicidad de escaneos
+let procesandoEscaneo = false; 
 
-const catEmojis = { 
-  abarrotes:'🥫', frutas_verduras:'🍎', lacteos:'🥛', carnes:'🥩', 
-  panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', hogar:'🏠', 
-  tocador:'🧴', congelados:'🥶', otro:'📦' 
-};
-const catNames = { 
-  abarrotes:'Abarrotes', frutas_verduras:'Frutas y Verduras', lacteos:'Lácteos', carnes:'Carnes', 
-  panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', hogar:'Hogar', 
-  tocador:'Tocador', congelados:'Congelados', otro:'Otro' 
-};
+let unsubPorRecordar = null;
+let unsubLista = null;
+let unsubHistorial = null;
+let unsubDiccionario = null;
 
+const catEmojis = { abarrotes:'🥫', frutas_verduras:'🍎', lacteos:'🥛', carnes:'🥩', panaderia:'🍞', bebidas:'🧃', limpieza:'🧹', hogar:'🏠', tocador:'🧴', congelados:'🥶', otro:'📦' };
+const catNames = { abarrotes:'Abarrotes', frutas_verduras:'Frutas y Verduras', lacteos:'Lácteos', carnes:'Carnes', panaderia:'Panadería', bebidas:'Bebidas', limpieza:'Limpieza', hogar:'Hogar', tocador:'Tocador', congelados:'Congelados', otro:'Otro' };
 const legacyCatMap = { 'frutas': 'frutas_verduras', 'verduras': 'frutas_verduras', 'quimicos': 'limpieza' };
 
 function normalizarCategoria(catRaw) {
@@ -385,7 +362,7 @@ function normalizarCategoria(catRaw) {
   return catNames[catMapped] ? catMapped : 'otro';
 }
 
-// BEEP SONORO MÁS AGUDO (2500 Hz)
+// BEEP SONORO MÁS AGUDO (2500 Hz) Y NOTIFICACIÓN VISUAL
 function reproducirBeep() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -393,7 +370,7 @@ function reproducirBeep() {
     const gain = audioCtx.createGain();
     
     osc.type = "sine";
-    osc.frequency.setValueAtTime(2500, audioCtx.currentTime); // Subimos la frecuencia a 2500 Hz para simular láser
+    osc.frequency.setValueAtTime(2500, audioCtx.currentTime); 
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     
     osc.connect(gain);
@@ -402,8 +379,22 @@ function reproducirBeep() {
     osc.start();
     osc.stop(audioCtx.currentTime + 0.1); 
   } catch (e) {
-    console.warn("No se pudo emitir el tono de beep:", e);
+    console.warn("No se pudo emitir el tono:", e);
   }
+}
+
+function mostrarNotificacion(mensaje) {
+  const toast = document.getElementById('toastNotificacion');
+  toast.textContent = mensaje;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+
+function limpiarListeners() {
+  if (unsubPorRecordar) { unsubPorRecordar(); unsubPorRecordar = null; }
+  if (unsubLista) { unsubLista(); unsubLista = null; }
+  if (unsubHistorial) { unsubHistorial(); unsubHistorial = null; }
+  if (unsubDiccionario) { unsubDiccionario(); unsubDiccionario = null; }
 }
 
 // AUTENTICACIÓN
@@ -411,19 +402,19 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Por favor, llena los campos.");
-  try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error al ingresar: " + e.message); }
+  try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert("Error: " + e.message); }
 });
 
 document.getElementById('btnGoogle').addEventListener('click', async () => {
-  try { await signInWithPopup(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
+  try { await signInWithPopup(auth, googleProvider); } catch (e) { alert("Error: " + e.message); }
 });
 
 document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
   if (!email || !pass) return alert("Escribe un correo y contraseña.");
-  if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
-    try { await createUserWithEmailAndPassword(auth, email, pass); alert("¡Cuenta creada exitosamente!"); } catch (e) { alert("Error: " + e.message); }
+  if(confirm("¿Crear cuenta nueva?")) {
+    try { await createUserWithEmailAndPassword(auth, email, pass); alert("¡Cuenta creada!"); } catch (e) { alert("Error: " + e.message); }
   }
 });
 
@@ -433,17 +424,18 @@ function inicializarAutenticacion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       usuarioActual = user;
-      
-      // CARGAMOS EL PRESUPUESTO ESPECÍFICO DEL USUARIO
       presupuesto = parseFloat(localStorage.getItem(`presupuesto_${usuarioActual.uid}`)) || 0;
       
       document.getElementById('authSeccion').classList.add('hidden');
       document.getElementById('appContenido').classList.remove('hidden');
+      
+      limpiarListeners(); 
       inicializarListeners();
-      cargarDiccionario();
+      unsubDiccionario = onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
       actualizarBotonPresupuestoUI();
     } else {
       usuarioActual = null;
+      limpiarListeners(); 
       document.getElementById('authSeccion').classList.remove('hidden');
       document.getElementById('appContenido').classList.add('hidden');
     }
@@ -460,7 +452,6 @@ window.cambiarTab = (tab) => {
   document.getElementById('seccionLista').classList.toggle('hidden', !esLista);
   document.getElementById('seccionCarrito').classList.toggle('hidden', !esCarrito);
   document.getElementById('seccionHistorial').classList.toggle('hidden', !esHistorial);
-  
   document.getElementById('barraInferior').classList.toggle('hidden', !esCarrito);
 
   document.getElementById('tabLista').classList.toggle('active', esLista);
@@ -468,7 +459,7 @@ window.cambiarTab = (tab) => {
   document.getElementById('tabHistorial').classList.toggle('active', esHistorial);
 };
 
-// GESTIÓN DE PRESUPUESTO MULTI-CUENTA
+// PRESUPUESTO
 function actualizarBotonPresupuestoUI() {
   const chip = document.getElementById('budgetChip');
   if (presupuesto > 0) {
@@ -487,7 +478,6 @@ window.guardarPresupuesto = () => {
   const val = parseFloat(document.getElementById('inputPresupuesto').value);
   if (!isNaN(val) && val > 0) {
     presupuesto = val;
-    // GUARDADO SEGURO POR USUARIO
     localStorage.setItem(`presupuesto_${usuarioActual.uid}`, val);
     const totalActual = parseFloat(document.getElementById('totalCuenta').innerText.replace('$','')) || 0;
     actualizarBudgetUI(totalActual);
@@ -530,11 +520,18 @@ function actualizarBudgetUI(total) {
   actualizarBotonPresupuestoUI();
 }
 
-// AUTOCOMPLETADO
-async function cargarDiccionario() {
-  onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
+// BÚSQUEDA Y SINCRONIZACIÓN ENTRE LISTAS
+async function revisarYQuitarDePorRecordar(nombreProducto) {
+  const qRecordar = query(colPorRecordar, where("userId", "==", usuarioActual.uid));
+  const snap = await getDocs(qRecordar);
+  snap.docs.forEach(async (d) => {
+    if (d.data().nombre.toLowerCase() === nombreProducto.toLowerCase()) {
+      await deleteDoc(doc(db, "por_recordar", d.id));
+    }
+  });
 }
 
+// AUTOCOMPLETADO
 document.getElementById('nombreLista').addEventListener('input', (e) => {
   configurarAutocompletado(e.target.value, 'sugerenciasLista', (p) => {
     document.getElementById('nombreLista').value = p.nombre;
@@ -582,7 +579,7 @@ document.addEventListener('click', (e) => {
   });
 });
 
-// ESCÁNER CON CANDADO ANTI-DUPLICADOS
+// ESCÁNER CONTINUO CON CANDADO (2 SEGUNDOS)
 let html5QrCode = null;
 document.getElementById('btnEscanear').addEventListener('click', async () => {
   if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
@@ -593,11 +590,10 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
     html5QrCode = new window.Html5Qrcode("reader");
 
     const qrCodeSuccessCallback = async (decodedText) => {
-      // PREVENCIÓN DE DUPLICADOS: Si ya está procesando un escaneo, ignorar
-      if (procesandoEscaneo) return;
+      if (procesandoEscaneo) return; 
       procesandoEscaneo = true;
 
-      reproducirBeep();
+      reproducirBeep(); 
 
       const existenteEnCarrito = productosEnCarritoMemoria.find(p => p.codigo === decodedText);
       
@@ -605,7 +601,11 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         await updateDoc(doc(db, "lista_actual", existenteEnCarrito.id), {
           piezas: existenteEnCarrito.piezas + 1
         });
-        detenerEscaner();
+        await revisarYQuitarDePorRecordar(existenteEnCarrito.nombre);
+        mostrarNotificacion(`+1 agregado: ${existenteEnCarrito.nombre}`);
+        
+        // NO cerramos el escáner. Liberamos el candado en 2 segundos para seguir escaneando.
+        setTimeout(() => { procesandoEscaneo = false; }, 2000);
         return;
       }
 
@@ -623,13 +623,17 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
           creado: Date.now(),
           userId: usuarioActual.uid
         });
-        detenerEscaner();
+        await revisarYQuitarDePorRecordar(encontradoDiccionario.nombre);
+        mostrarNotificacion(`Agregado al carrito: ${encontradoDiccionario.nombre}`);
+        
+        setTimeout(() => { procesandoEscaneo = false; }, 2000);
         return;
       }
 
+      // Si el código es nuevo, cerramos el escáner para que el usuario escriba los datos.
       codigoEscaneadoTemporal = decodedText;
       const badge = document.getElementById('badgeCodigoEscaneado');
-      badge.textContent = `📷 Código: ${decodedText} (Completa los datos para darlo de alta)`;
+      badge.textContent = `📷 Código: ${decodedText} (Completa datos)`;
       badge.style.display = 'block';
       document.getElementById('nombre').value = '';
       document.getElementById('precio').value = '';
@@ -657,8 +661,7 @@ async function detenerEscaner() {
     html5QrCode = null;
   }
   reader.style.display = 'none';
-  // LIBERAR CANDADO DE ESCANEO
-  procesandoEscaneo = false;
+  procesandoEscaneo = false; 
 }
 
 const limpiarInputs = () => {
@@ -674,11 +677,10 @@ const limpiarInputs = () => {
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// LISTENERS
+// LISTENERS (Tiempo Real Firebase)
 function inicializarListeners() {
-  // A) LISTA POR RECORDAR
   const qRecordar = query(colPorRecordar, where("userId", "==", usuarioActual.uid));
-  onSnapshot(qRecordar, (snapshot) => {
+  unsubPorRecordar = onSnapshot(qRecordar, (snapshot) => {
     const cont = document.getElementById('contenedorPorRecordar');
     cont.innerHTML = '';
     
@@ -701,9 +703,8 @@ function inicializarListeners() {
     });
   });
 
-  // B) CARRITO ACTIVO
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
-  onSnapshot(qLista, (snapshot) => {
+  unsubLista = onSnapshot(qLista, (snapshot) => {
     let totalTotal = 0;
     productosEnCarritoMemoria = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
    
@@ -723,9 +724,8 @@ function inicializarListeners() {
     actualizarBudgetUI(totalTotal);
   });
 
-  // C) HISTORIAL
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
-  onSnapshot(qHist, (snapshot) => {
+  unsubHistorial = onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
     cont.innerHTML = '';
     const historialOrdenado = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
@@ -753,7 +753,6 @@ function inicializarListeners() {
         const itemsHtml = itemsDeCat.map(i => {
           const totalFinalItem = i.precio * i.piezas;
           subtotalCat += totalFinalItem;
-
           const qtyText = `${i.piezas}× `;
           const unitText = i.piezas > 1 ? ` ($${i.precio.toFixed(2)} c/u)` : '';
 
@@ -801,7 +800,7 @@ window.actualizarTextoDetails = (el, totalProductos) => {
   summary.textContent = el.open ? `Ocultar ${totalProductos} productos` : `Ver ${totalProductos} productos`;
 };
 
-// FUNCIONES: PESTAÑA LISTA POR RECORDAR
+// CRUD: LISTA (POR RECORDAR)
 document.getElementById('btnAgregarRecordatorio').addEventListener('click', async () => {
   const nombre = document.getElementById('nombreLista').value.trim();
   const categoria = document.getElementById('categoriaLista').value;
@@ -835,7 +834,7 @@ window.moverAlCarrito = async (idRecordatorio, nombre, categoria) => {
   cambiarTab('carrito');
 };
 
-// CRUD CARRITO
+// CRUD: CARRITO
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
@@ -856,6 +855,9 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
     if (codigoEscaneadoTemporal) docRefData.codigo = codigoEscaneadoTemporal;
 
     await addDoc(colLista, docRefData);
+    
+    // Si se agrega manual al carrito, revisamos si estaba en la lista de recordatorios y lo quitamos
+    await revisarYQuitarDePorRecordar(nombre);
     
     const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 
@@ -910,29 +912,43 @@ window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
 };
 document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
 
+// GUARDADO FINAL CON ADVERTENCIA DE LIMPIEZA
 document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
-  const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
-  if (snap.empty) return alert('Tu carrito está vacío.');
-  if (!confirm('¿Finalizar y guardar esta compra en tu historial?')) return;
+  const snapLista = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
+  if (snapLista.empty) return alert('Tu carrito está vacío.');
   
-  const items = snap.docs.map(d => d.data());
+  const snapRecordar = await getDocs(query(colPorRecordar, where("userId", "==", usuarioActual.uid)));
+
+  if (!snapRecordar.empty) {
+    const confirmacion = confirm(`⚠️ Tienes ${snapRecordar.size} artículo(s) "Por recordar" que NO has pasado al carrito.\n\n¿Deseas guardar la compra de todos modos y VACIAR la lista "Por recordar"?`);
+    if (!confirmacion) return; // Si cancela, regresamos sin hacer nada
+  } else {
+    if (!confirm('¿Finalizar y guardar esta compra en tu historial?')) return;
+  }
+  
+  const items = snapLista.docs.map(d => d.data());
   const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
   
+  // Guardar en el Historial
   await addDoc(colHistorial, {
     fecha: new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }),
     timestamp: Date.now(), total, detalles: items, userId: usuarioActual.uid
   });
   
-  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
+  // Limpieza Masiva Transaccional (Promise.all para velocidad)
+  const promesasEliminarCarrito = snapLista.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id)));
+  const promesasEliminarRecordar = snapRecordar.docs.map(d => deleteDoc(doc(db, "por_recordar", d.id)));
   
-  // REINICIO EXPLÍCITO A "SIN DEFINIR"
+  await Promise.all([...promesasEliminarCarrito, ...promesasEliminarRecordar]);
+  
+  // REINICIO DE PRESUPUESTO
   presupuesto = 0;
   localStorage.removeItem(`presupuesto_${usuarioActual.uid}`);
   actualizarBudgetUI(0);
   actualizarBotonPresupuestoUI();
 
   limpiarInputs();
-  alert('¡Compra guardada con éxito! El presupuesto se ha reiniciado a "Sin definir".');
+  alert('¡Compra guardada! El carrito, la lista por recordar y el presupuesto se han reiniciado exitosamente.');
   cambiarTab('historial');
 });
 </script>
