@@ -36,13 +36,13 @@
   body { font-family: var(--font); background: var(--bg); color: var(--text); padding-bottom: 120px; min-height: 100vh; }
   .app { max-width: 430px; margin: 0 auto; }
   
-  /* CABECERA (HEADER) Y NAVEGACIÓN */
+  /* CABECERA (HEADER) Y NAVEGACIÓN EN 3 PESTAÑAS */
   .header { background: var(--card); padding: 20px 20px 0; position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .app-name { font-size: 20px; font-weight: 900; }
   .app-name span { color: var(--accent); }
   .tabs { display: flex; }
-  .tab-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 700; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; font-family: var(--font); }
+  .tab-btn { flex: 1; padding: 12px 0; font-size: 13px; font-weight: 800; background: none; border: none; color: var(--text-muted); border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; font-family: var(--font); text-align: center; }
   .tab-btn.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
   
   /* ELEMENTOS VISUALES DEL PRESUPUESTO */
@@ -54,6 +54,7 @@
   .budget-amounts { font-size: 13px; font-weight: 800; }
   .budget-amounts .spent { color: var(--accent); }
   .budget-amounts .total-b { color: var(--text-muted); }
+  .extra-badge { font-size: 10px; font-weight: 900; background: var(--red-light); color: var(--red); padding: 2px 8px; border-radius: 12px; border: 1px solid var(--red); margin-left: 6px; }
   .bar-track { background: var(--bg); border-radius: 99px; height: 8px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width .5s ease; }
   .bar-fill.warn { background: var(--orange); }
@@ -86,65 +87,17 @@
   }
 
   /* ESTILOS HOMOGÉNEOS PARA AUTENTICACIÓN */
-  .auth-container {
-    max-width: 430px;
-    margin: 20px auto 0;
-  }
-  .auth-title {
-    font-size: 22px;
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-  .auth-divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 18px 0;
-    color: var(--text-hint);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-  }
-  .auth-divider::before, .auth-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--card-border);
-  }
+  .auth-container { max-width: 430px; margin: 20px auto 0; }
+  .auth-title { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 20px; letter-spacing: -0.5px; color: var(--text); }
+  .auth-divider { display: flex; align-items: center; text-align: center; margin: 18px 0; color: var(--text-hint); font-size: 11px; font-weight: 800; letter-spacing: 0.05em; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .auth-divider span { padding: 0 12px; }
-  .btn-link {
-    display: block;
-    width: 100%;
-    margin-top: 16px;
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
-    cursor: pointer;
-    text-decoration: underline;
-    font-family: var(--font);
-    transition: color 0.2s;
-  }
+  .btn-link { display: block; width: 100%; margin-top: 16px; background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; text-align: center; cursor: pointer; text-decoration: underline; font-family: var(--font); transition: color 0.2s; }
   .btn-link:hover { color: var(--accent); }
 
-  .tax-container { display: flex; gap: 15px; margin: 4px 0 12px 2px; }
-  .tax-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
-  .tax-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .code-detected-badge { display: none; font-size: 11px; font-weight: 800; background: var(--orange-light); color: var(--orange); padding: 6px 10px; border-radius: var(--radius-sm); margin-bottom: 10px; border: 1px solid var(--orange); }
 
-  .modal-overlay { 
-    display: none !important; 
-    position: fixed; 
-    inset: 0; 
-    z-index: 50; 
-    background: rgba(0,0,0,0.5); 
-    align-items: flex-end; 
-    justify-content: center; 
-  }
+  .modal-overlay { display: none !important; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5); align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex !important; }
   .modal { background: var(--card); padding: 20px; border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 430px; }
   .modal h3 { margin-bottom: 12px; font-size: 18px; font-weight: 800; }
@@ -166,7 +119,7 @@
   .btn-google:hover { background: var(--accent-light); }
   .btn-google svg { width: 18px; height: 18px; }
 
-  /* COMPONENTES DE LAS CATEGORÍAS */
+  /* COMPONENTES DE LAS CATEGORÍAS Y TARJETAS */
   .cat-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; display: inline-flex; align-items: center; gap: 4px; }
   .cat-abarrotes { background: #fef3c7; color: #92400e; }
   .cat-frutas_verduras { background: #dcfce7; color: #166534; }
@@ -180,26 +133,19 @@
   .cat-congelados { background: #ccfbf1; color: #0f766e; }
   .cat-otro { background: #f1f5f9; color: #475569; }
 
-  .tax-badge { font-size: 9px; font-weight: 800; background: var(--accent-light); color: var(--accent); padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
-
-  /* TARJETAS DE PRODUCTOS (ITEMS) */
   .item-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--card-border); display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; }
-  .item-card.done-item { opacity: 0.55; }
   .item-info { flex: 1; min-width: 0; }
   .item-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-  .item-name.tachado { text-decoration: line-through; color: var(--text-hint); }
   .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .item-price { font-size: 15px; font-weight: 900; }
   .del-btn { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
-  .check-btn { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--card-border); background: none; cursor: pointer; }
-  .check-btn.checked { background: var(--green); border-color: var(--green); color: white; display: flex; align-items: center; justify-content: center; }
+  .btn-move-cart { background: var(--green-light); color: var(--green); border: 1px solid var(--green); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
   
-  /* CUADRO DE SUGERENCIAS INTEGRADAS (AUTOCOMPLETE) */
   .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; top: 110px; }
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
   .sugerencia-item:hover { background: var(--accent-light); }
 
-  /* LISTADO HISTÓRICO DE COMPRAS */
+  /* HISTORIAL */
   .section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
   .hist-card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; border: 1px solid var(--card-border); box-shadow: var(--shadow-sm); }
@@ -221,11 +167,6 @@
   .ticket-dots { flex-grow: 1; border-bottom: 1.5px dashed var(--card-border); margin: 0 8px; height: 1px; }
   .ticket-price { flex-shrink: 0; font-weight: 800; color: var(--text); }
 
-  .tax-breakdown-card { margin-top: 12px; padding: 10px 12px; background: var(--card); border: 1px dashed var(--card-border); border-radius: var(--radius-sm); font-size: 11px; }
-  .tax-breakdown-row { display: flex; justify-content: space-between; margin-bottom: 3px; color: var(--text-muted); font-weight: 600; }
-  .tax-breakdown-row.total-row { border-top: 1px solid var(--card-border); padding-top: 4px; margin-top: 4px; color: var(--text); font-weight: 800; font-size: 12px; }
-
-  /* TABLERO DE CONTROL INFERIOR (BOTTOM BAR) */
   .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--card-border); padding: 14px 20px; max-width: 430px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
   .total-label { font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--text-hint); }
   .total-amount { font-size: 30px; font-weight: 900; color: var(--green); }
@@ -236,14 +177,14 @@
 <body>
 <div class="app">
 
-  <!-- SECCIÓN DE AUTENTICACIÓN ESTANDARIZADA -->
+  <!-- SECCIÓN DE AUTENTICACIÓN -->
   <div id="authSeccion" class="main">
     <div class="auth-container">
       <div class="form-card" style="padding: 24px 20px;">
         <h2 class="auth-title">🔐 Acceso Familiar</h2>
         <input id="authEmail" type="email" placeholder="Correo electrónico" autocomplete="email">
         <input id="authPassword" type="password" placeholder="Contraseña" autocomplete="current-password">
-        <button id="btnLogin" class="btn-primary" style="margin-top: 4px;">Ingresar con Correo</button>
+        <button id="btnLogin" class="btn-primary" style="margin-top: 4px;">Ingresar con correo</button>
         
         <div class="auth-divider">
           <span>O BIEN</span>
@@ -265,19 +206,48 @@
       <div class="header-top">
         <div class="app-name">🛒 Súper<span>Familiar</span></div>
         <div class="budget-chip" id="budgetChip" onclick="abrirModalPresupuesto()">
-          Presupuesto: <span id="budgetDisplay">Sin definir</span>
+          Definir presupuesto
         </div>
         <button id="btnLogout" class="btn-logout">Salir</button>
       </div>
+      <!-- NAVEGACIÓN REFACTORIZADA A 3 PESTAÑAS -->
       <div class="tabs">
-        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">Lista Actual</button>
-        <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">Historial</button>
+        <button class="tab-btn active" id="tabLista" onclick="cambiarTab('lista')">📝 Lista</button>
+        <button class="tab-btn" id="tabCarrito" onclick="cambiarTab('carrito')">🛒 Carrito</button>
+        <button class="tab-btn" id="tabHistorial" onclick="cambiarTab('historial')">📜 Historial</button>
       </div>
     </div>
    
     <div class="main">
       
+      <!-- PESTAÑA 1: LISTA (PLANEACIÓN DE COMPRAS POR RECORDAR) -->
       <div id="seccionLista">
+        <div class="form-card">
+          <input id="nombreLista" type="text" placeholder="¿Qué artículo deseas recordar comprar?" autocomplete="off">
+          <div id="sugerenciasLista" class="sugerencias-box"></div>
+          
+          <select id="categoriaLista" style="margin-bottom:10px">
+            <option value="abarrotes">🥫 Abarrotes</option>
+            <option value="frutas_verduras">🍎 Frutas y verduras</option>
+            <option value="lacteos">🥛 Lácteos</option>
+            <option value="carnes">🥩 Carnes</option>
+            <option value="panaderia">🍞 Panadería</option>
+            <option value="bebidas">🧃 Bebidas</option>
+            <option value="limpieza">🧹 Limpieza</option>
+            <option value="hogar">🏠 Hogar</option>
+            <option value="tocador">🧴 Tocador</option>
+            <option value="congelados">🥶 Congelados</option>
+            <option value="otro">📦 Otro</option>
+          </select>
+          <button class="btn-primary" id="btnAgregarRecordatorio">+ Recordar compra</button>
+        </div>
+
+        <div class="section-label">por recordar</div>
+        <div id="contenedorPorRecordar"></div>
+      </div>
+
+      <!-- PESTAÑA 2: CARRITO (COMPRAS ACTIVAS Y BARRA DE PRESUPUESTO) -->
+      <div id="seccionCarrito" class="hidden">
         
         <div class="budget-bar-card" id="budgetBarCard" style="display:none">
           <div class="budget-bar-header">
@@ -296,27 +266,22 @@
         </div>
 
         <div class="form-card" id="formCard">
-          <button id="btnEscanear" class="btn-scan">📷 Escanear Código de Barras</button>
+          <button id="btnEscanear" class="btn-scan">📷 Escanear código de barras</button>
           <div id="reader" style="width: 100%; display:none; margin-bottom: 12px; border-radius: var(--radius-sm); overflow: hidden;"></div>
 
           <div id="badgeCodigoEscaneado" class="code-detected-badge"></div>
 
-          <input id="nombre" type="text" placeholder="¿Qué vamos a comprar?" autocomplete="off">
+          <input id="nombre" type="text" placeholder="Producto para el carrito..." autocomplete="off">
           <div id="sugerencias" class="sugerencias-box"></div>
 
           <div class="form-row">
             <input id="precio" type="number" step="0.01" placeholder="$ Precio Final" style="flex:1">
             <input id="piezas" type="number" placeholder="Cant." style="width:90px">
           </div>
-
-          <div class="tax-container">
-            <label class="tax-label"><input type="checkbox" id="chkIva"> Incluye IVA (16%)</label>
-            <label class="tax-label"><input type="checkbox" id="chkIeps"> Incluye IEPS (8%)</label>
-          </div>
           
           <select id="categoria" style="margin-bottom:10px">
             <option value="abarrotes">🥫 Abarrotes</option>
-            <option value="frutas_verduras">🍎 Frutas y Verduras</option>
+            <option value="frutas_verduras">🍎 Frutas y verduras</option>
             <option value="lacteos">🥛 Lácteos</option>
             <option value="carnes">🥩 Carnes</option>
             <option value="panaderia">🍞 Panadería</option>
@@ -327,29 +292,26 @@
             <option value="congelados">🥶 Congelados</option>
             <option value="otro">📦 Otro</option>
           </select>
-          <button class="btn-primary" id="btnAgregar">+ Agregar a la lista</button>
+          <button class="btn-primary" id="btnAgregar">+ Agregar al Carrito</button>
           <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
         </div>
    
         <div id="pendientesWrap">
-          <div class="section-label" id="labelPendientes">pendientes</div>
+          <div class="section-label" id="labelPendientes">en el carrito</div>
           <div id="listaContenedor"></div>
-        </div>
-   
-        <div id="completadosWrap" class="hidden">
-          <div class="section-label" id="labelCompletados">completados</div>
-          <div id="listaCompletados"></div>
         </div>
       </div>
    
+      <!-- PESTAÑA 3: HISTORIAL -->
       <div id="seccionHistorial" class="hidden">
         <div id="historialContenedor"></div>
       </div>
     </div>
 
+    <!-- BARRA INFERIOR DE COMPRA -->
     <div class="bottom-bar" id="barraInferior">
       <div>
-        <div class="total-label">Total estimado (Pendientes + Completados)</div>
+        <div class="total-label">Total del Carrito</div>
         <div class="total-amount" id="totalCuenta">$0.00</div>
       </div>
       <button class="btn-save" id="btnGuardarCompra">Guardar compra</button>
@@ -371,7 +333,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query, orderBy, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
  
 const firebaseConfig = {
   apiKey: "AIzaSyDtZUWQzwes7Z9cmNwgKImUfJtlo3SJ-hg",
@@ -389,12 +351,14 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 const colLista = collection(db, "lista_actual");
+const colPorRecordar = collection(db, "por_recordar");
 const colHistorial = collection(db, "historial");
 const colDiccionario = collection(db, "diccionario_productos");
  
 let idEdicion = null;
 let usuarioActual = null;
 let productosDiccionario = [];
+let productosEnCarritoMemoria = [];
 let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
 let codigoEscaneadoTemporal = null;
 
@@ -418,20 +382,28 @@ function normalizarCategoria(catRaw) {
   return catNames[catMapped] ? catMapped : 'otro';
 }
 
-function desglosarImpuestosItem(precioFinal, piezas, tieneIva, tieneIeps) {
-  const montoTotalFinal = precioFinal * piezas;
-  let factorImpuestos = 1;
-  if (tieneIva) factorImpuestos += 0.16;
-  if (tieneIeps) factorImpuestos += 0.08;
-
-  const baseTotal = montoTotalFinal / factorImpuestos;
-  const montoIva = tieneIva ? baseTotal * 0.16 : 0;
-  const montoIeps = tieneIeps ? baseTotal * 0.08 : 0;
-
-  return { totalFinal: montoTotalFinal, base: baseTotal, iva: montoIva, ieps: montoIeps };
+// GENERADOR DE SONIDO (BEEP) VÍA WEB AUDIO API
+function reproducirBeep() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime); // 800 Hz
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1); // Duración de 100ms
+  } catch (e) {
+    console.warn("No se pudo emitir el tono de beep:", e);
+  }
 }
 
-// AUTENTICACIÓN
+// CORRECCIÓN DE AUTENTICACIÓN GOOGLE Y EMAIL
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -440,13 +412,17 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 });
 
 document.getElementById('btnGoogle').addEventListener('click', async () => {
-  try { await signInWithRedirect(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
+  try { 
+    await signInWithPopup(auth, googleProvider); 
+  } catch (e) { 
+    alert("Error al conectar con Google: " + e.message); 
+  }
 });
 
 document.getElementById('btnRegistro').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
-  if (!email || !pass) return alert("Escribe un correo y contraseña para registrarte.");
+  if (!email || !pass) return alert("Escribe un correo y contraseña.");
   if(confirm("¿Deseas crear una cuenta nueva con este correo?")) {
     try { await createUserWithEmailAndPassword(auth, email, pass); alert("¡Cuenta creada exitosamente!"); } catch (e) { alert("Error: " + e.message); }
   }
@@ -454,12 +430,7 @@ document.getElementById('btnRegistro').addEventListener('click', async () => {
 
 document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-async function inicializarAutenticacion() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) usuarioActual = result.user;
-  } catch (error) { console.error("Error al procesar redirección:", error); }
-
+function inicializarAutenticacion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       usuarioActual = user;
@@ -467,6 +438,7 @@ async function inicializarAutenticacion() {
       document.getElementById('appContenido').classList.remove('hidden');
       inicializarListeners();
       cargarDiccionario();
+      actualizarBotonPresupuestoUI();
     } else {
       usuarioActual = null;
       document.getElementById('authSeccion').classList.remove('hidden');
@@ -476,15 +448,33 @@ async function inicializarAutenticacion() {
 }
 inicializarAutenticacion();
 
-// NAVEGACIÓN Y PRESUPUESTO
+// NAVEGACIÓN ENTRE LAS 3 PESTAÑAS
 window.cambiarTab = (tab) => {
-  const esList = tab === 'lista';
-  document.getElementById('seccionLista').classList.toggle('hidden', !esList);
-  document.getElementById('seccionHistorial').classList.toggle('hidden', esList);
-  document.getElementById('barraInferior').classList.toggle('hidden', !esList);
-  document.getElementById('tabLista').classList.toggle('active', esList);
-  document.getElementById('tabHistorial').classList.toggle('active', !esList);
+  const esLista = tab === 'lista';
+  const esCarrito = tab === 'carrito';
+  const esHistorial = tab === 'historial';
+
+  document.getElementById('seccionLista').classList.toggle('hidden', !esLista);
+  document.getElementById('seccionCarrito').classList.toggle('hidden', !esCarrito);
+  document.getElementById('seccionHistorial').classList.toggle('hidden', !esHistorial);
+  
+  // La barra inferior sólo se muestra en el Carrito de compra
+  document.getElementById('barraInferior').classList.toggle('hidden', !esCarrito);
+
+  document.getElementById('tabLista').classList.toggle('active', esLista);
+  document.getElementById('tabCarrito').classList.toggle('active', esCarrito);
+  document.getElementById('tabHistorial').classList.toggle('active', esHistorial);
 };
+
+// PRESUPUESTO
+function actualizarBotonPresupuestoUI() {
+  const chip = document.getElementById('budgetChip');
+  if (presupuesto > 0) {
+    chip.textContent = `Presupuesto: $${presupuesto.toFixed(0)}`;
+  } else {
+    chip.textContent = `Definir presupuesto`;
+  }
+}
 
 window.abrirModalPresupuesto = () => {
   if (presupuesto) document.getElementById('inputPresupuesto').value = presupuesto;
@@ -499,16 +489,15 @@ window.guardarPresupuesto = () => {
     const totalActual = parseFloat(document.getElementById('totalCuenta').innerText.replace('$','')) || 0;
     actualizarBudgetUI(totalActual);
   }
+  actualizarBotonPresupuestoUI();
   cerrarModal();
 };
 
 function actualizarBudgetUI(total) {
-  const chip = document.getElementById('budgetDisplay');
   const card = document.getElementById('budgetBarCard');
   const extraBadge = document.getElementById('extraBadge');
 
   if (presupuesto > 0) {
-    chip.textContent = `$${presupuesto.toFixed(0)}`;
     card.style.display = 'block';
     const pct = Math.min((total / presupuesto) * 100, 100);
     const remaining = presupuesto - total;
@@ -532,10 +521,10 @@ function actualizarBudgetUI(total) {
       extraBadge.classList.remove('hidden');
     }
   } else { 
-    chip.textContent = 'Sin definir'; 
     card.style.display = 'none'; 
     extraBadge.classList.add('hidden');
   }
+  actualizarBotonPresupuestoUI();
 }
 
 // AUTOCOMPLETADO
@@ -543,12 +532,31 @@ async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
 
+// Sugerencias para Pestaña Lista
+document.getElementById('nombreLista').addEventListener('input', (e) => {
+  configurarAutocompletado(e.target.value, 'sugerenciasLista', (p) => {
+    document.getElementById('nombreLista').value = p.nombre;
+    document.getElementById('categoriaLista').value = normalizarCategoria(p.categoria);
+  });
+});
+
+// Sugerencias para Pestaña Carrito
 document.getElementById('nombre').addEventListener('input', (e) => {
-  const busqueda = e.target.value.toLowerCase().trim();
-  const box = document.getElementById('sugerencias');
+  configurarAutocompletado(e.target.value, 'sugerencias', (p) => {
+    document.getElementById('nombre').value = p.nombre;
+    document.getElementById('precio').value = p.precio;
+    document.getElementById('piezas').value = 1;
+    document.getElementById('categoria').value = normalizarCategoria(p.categoria);
+  });
+});
+
+function configurarAutocompletado(busqueda, boxId, onSelect) {
+  const queryText = busqueda.toLowerCase().trim();
+  const box = document.getElementById(boxId);
   box.innerHTML = '';
-  if(!busqueda) { box.style.display = 'none'; return; }
-  const filtrados = productosDiccionario.filter(p => p.nombre.toLowerCase().includes(busqueda));
+  if(!queryText) { box.style.display = 'none'; return; }
+  
+  const filtrados = productosDiccionario.filter(p => p.nombre.toLowerCase().includes(queryText));
   if(filtrados.length > 0) {
     box.style.display = 'block';
     filtrados.forEach(p => {
@@ -558,26 +566,22 @@ document.getElementById('nombre').addEventListener('input', (e) => {
       div.textContent = `${catEmojis[catNorm] || '📦'} ${p.nombre}`;
       div.onclick = (evt) => {
         evt.stopPropagation();
-        document.getElementById('nombre').value = p.nombre;
-        document.getElementById('precio').value = p.precio;
-        document.getElementById('piezas').value = 1;
-        document.getElementById('categoria').value = catNorm;
-        document.getElementById('chkIva').checked = !!p.iva;
-        document.getElementById('chkIeps').checked = !!p.ieps;
+        onSelect(p);
         box.style.display = 'none';
       };
       box.appendChild(div);
     });
   } else { box.style.display = 'none'; }
-});
+}
 
 document.addEventListener('click', (e) => {
-  const box = document.getElementById('sugerencias');
-  const inputNombre = document.getElementById('nombre');
-  if (e.target !== inputNombre && !box.contains(e.target)) box.style.display = 'none';
+  ['sugerencias', 'sugerenciasLista'].forEach(id => {
+    const box = document.getElementById(id);
+    if (box && !box.contains(e.target)) box.style.display = 'none';
+  });
 });
 
-// ESCÁNER
+// ESCÁNER INTELIGENTE
 let html5QrCode = null;
 document.getElementById('btnEscanear').addEventListener('click', async () => {
   if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
@@ -587,30 +591,50 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
     reader.style.display = 'block';
     html5QrCode = new window.Html5Qrcode("reader");
 
-    const qrCodeSuccessCallback = (decodedText) => {
-      const encontrado = productosDiccionario.find(p => p.codigo === decodedText);
-      const badge = document.getElementById('badgeCodigoEscaneado');
+    const qrCodeSuccessCallback = async (decodedText) => {
+      // 1. REPRODUCIR BEEP SONORO
+      reproducirBeep();
 
-      if (encontrado) {
-        document.getElementById('nombre').value = encontrado.nombre;
-        document.getElementById('precio').value = encontrado.precio;
-        document.getElementById('piezas').value = 1;
-        document.getElementById('categoria').value = normalizarCategoria(encontrado.categoria);
-        document.getElementById('chkIva').checked = !!encontrado.iva;
-        document.getElementById('chkIeps').checked = !!encontrado.ieps;
-        codigoEscaneadoTemporal = null;
-        badge.style.display = 'none';
-      } else { 
-        codigoEscaneadoTemporal = decodedText;
-        badge.textContent = `📷 Código: ${decodedText} (Completa datos)`;
-        badge.style.display = 'block';
-        document.getElementById('nombre').value = '';
-        document.getElementById('precio').value = '';
-        document.getElementById('piezas').value = 1;
-        document.getElementById('chkIva').checked = false;
-        document.getElementById('chkIeps').checked = false;
-        document.getElementById('nombre').focus();
+      // 2. ¿YA EXISTE EN EL CARRITO PENDIENTE? -> SUMAR 1 PIEZA DIRECTAMENTE
+      const existenteEnCarrito = productosEnCarritoMemoria.find(p => p.codigo === decodedText);
+      
+      if (existenteEnCarrito) {
+        await updateDoc(doc(db, "lista_actual", existenteEnCarrito.id), {
+          piezas: existenteEnCarrito.piezas + 1
+        });
+        detenerEscaner();
+        return;
       }
+
+      // 3. ¿EXISTE EN EL DICCIONARIO BASE? -> AGREGAR DIRECTO A LA LISTA DE COMPRA CON 1 PIEZA
+      const encontradoDiccionario = productosDiccionario.find(p => p.codigo === decodedText);
+      
+      if (encontradoDiccionario) {
+        await addDoc(colLista, {
+          nombre: encontradoDiccionario.nombre,
+          precio: encontradoDiccionario.precio,
+          piezas: 1,
+          categoria: normalizarCategoria(encontradoDiccionario.categoria),
+          codigo: decodedText,
+          iva: false, ieps: false,
+          completado: false,
+          creado: Date.now(),
+          userId: usuarioActual.uid
+        });
+        detenerEscaner();
+        return;
+      }
+
+      // 4. SI ES UN CÓDIGO TOTALMENTE NUEVO -> PERMITIR RELLENAR PARA DAR DE ALTA
+      codigoEscaneadoTemporal = decodedText;
+      const badge = document.getElementById('badgeCodigoEscaneado');
+      badge.textContent = `📷 Código: ${decodedText} (Completa los datos para darlo de alta)`;
+      badge.style.display = 'block';
+      document.getElementById('nombre').value = '';
+      document.getElementById('precio').value = '';
+      document.getElementById('piezas').value = 1;
+      document.getElementById('nombre').focus();
+
       detenerEscaner();
     };
 
@@ -635,49 +659,68 @@ async function detenerEscaner() {
 }
 
 const limpiarInputs = () => {
-  document.getElementById('nombre').value = ''; document.getElementById('precio').value = '';
-  document.getElementById('piezas').value = ''; document.getElementById('categoria').value = 'abarrotes';
-  document.getElementById('chkIva').checked = false; document.getElementById('chkIeps').checked = false;
+  document.getElementById('nombre').value = ''; 
+  document.getElementById('precio').value = '';
+  document.getElementById('piezas').value = ''; 
+  document.getElementById('categoria').value = 'abarrotes';
   codigoEscaneadoTemporal = null;
   document.getElementById('badgeCodigoEscaneado').style.display = 'none';
-  idEdicion = null; document.getElementById('btnAgregar').textContent = '+ Agregar a la lista';
+  idEdicion = null; 
+  document.getElementById('btnAgregar').textContent = '+ Agregar al Carrito';
   document.getElementById('btnCancelar').style.display = 'none';
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// LISTENERS Y RENDERIZADO
+// LISTENERS Y FIRESTORE
 function inicializarListeners() {
+  // A) LISTA POR RECORDAR
+  const qRecordar = query(colPorRecordar, where("userId", "==", usuarioActual.uid));
+  onSnapshot(qRecordar, (snapshot) => {
+    const cont = document.getElementById('contenedorPorRecordar');
+    cont.innerHTML = '';
+    
+    snapshot.docs.forEach(d => {
+      const item = { id: d.id, ...d.data() };
+      const catNorm = normalizarCategoria(item.categoria);
+      const emoji = catEmojis[catNorm] || '📦';
+
+      const div = document.createElement('div');
+      div.className = 'item-card';
+      div.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${emoji} ${item.nombre}</div>
+          <div class="item-sub"><span class="cat-badge cat-${catNorm}">${catNames[catNorm] || 'Otro'}</span></div>
+        </div>
+        <button class="btn-move-cart" onclick="moverAlCarrito('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', '${catNorm}')">🛒 Pasar al Carrito</button>
+        <button class="del-btn" onclick="eliminarRecordatorio('${item.id}')">🗑️</button>
+      `;
+      cont.appendChild(div);
+    });
+  });
+
+  // B) CARRITO ACTIVO
   const qLista = query(colLista, where("userId", "==", usuarioActual.uid));
   onSnapshot(qLista, (snapshot) => {
     let totalTotal = 0;
-    const pendientes = [];
-    const completados = [];
-   
-    snapshot.docs.forEach(itemDoc => {
-      const item = { id: itemDoc.id, ...itemDoc.data() };
-      const subtotalFinal = item.precio * item.piezas;
-      totalTotal += subtotalFinal;
-      if (!item.completado) { pendientes.push(item); } else { completados.push(item); }
-    });
-   
-    pendientes.sort((a, b) => a.nombre.localeCompare(b.nombre));
-    completados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    productosEnCarritoMemoria = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
    
     const cont = document.getElementById('listaContenedor');
-    const contC = document.getElementById('listaCompletados');
-    cont.innerHTML = ''; contC.innerHTML = '';
+    cont.innerHTML = '';
    
-    pendientes.forEach(item => cont.appendChild(crearItemEl(item, false)));
-    completados.forEach(item => contC.appendChild(crearItemEl(item, true)));
+    productosEnCarritoMemoria.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    productosEnCarritoMemoria.forEach(item => {
+      totalTotal += (item.precio * item.piezas);
+      cont.appendChild(crearItemEl(item));
+    });
    
     document.getElementById('totalCuenta').textContent = `$${totalTotal.toFixed(2)}`;
-    document.getElementById('completadosWrap').classList.toggle('hidden', completados.length === 0);
-    document.getElementById('labelPendientes').textContent = `pendientes · ${pendientes.length}`;
-    document.getElementById('labelCompletados').textContent = `completados · ${completados.length}`;
+    document.getElementById('labelPendientes').textContent = `en el carrito · ${productosEnCarritoMemoria.length}`;
     
     actualizarBudgetUI(totalTotal);
   });
 
+  // C) HISTORIAL
   const qHist = query(colHistorial, where("userId", "==", usuarioActual.uid));
   onSnapshot(qHist, (snapshot) => {
     const cont = document.getElementById('historialContenedor');
@@ -688,10 +731,6 @@ function inicializarListeners() {
     historialOrdenado.forEach(c => {
       const div = document.createElement('div');
       div.className = 'hist-card';
-      
-      let baseAcumulada = 0;
-      let ivaAcumulado = 0;
-      let iepsAcumulado = 0;
 
       const agrupadosPorCategoria = c.detalles.reduce((acc, item) => {
         const catClean = normalizarCategoria(item.categoria);
@@ -709,22 +748,17 @@ function inicializarListeners() {
         let subtotalCat = 0;
 
         const itemsHtml = itemsDeCat.map(i => {
-          const des = desglosarImpuestosItem(i.precio, i.piezas, i.iva, i.ieps);
-          
-          baseAcumulada += des.base;
-          ivaAcumulado += des.iva;
-          iepsAcumulado += des.ieps;
-          subtotalCat += des.totalFinal;
+          const totalFinalItem = i.precio * i.piezas;
+          subtotalCat += totalFinalItem;
 
           const qtyText = `${i.piezas}× `;
           const unitText = i.piezas > 1 ? ` ($${i.precio.toFixed(2)} c/u)` : '';
-          const taxBadge = (i.iva || i.ieps) ? `<span class="tax-badge">${i.iva ? 'IVA ' : ''}${i.ieps ? 'IEPS' : ''}</span>` : '';
 
           return `
             <li class="ticket-item">
-              <span class="ticket-name">${qtyText}${i.nombre}${unitText}${taxBadge}</span>
+              <span class="ticket-name">${qtyText}${i.nombre}${unitText}</span>
               <span class="ticket-dots"></span>
-              <span class="ticket-price">$${des.totalFinal.toFixed(2)}</span>
+              <span class="ticket-price">$${totalFinalItem.toFixed(2)}</span>
             </li>
           `;
         }).join('');
@@ -740,15 +774,6 @@ function inicializarListeners() {
         `;
       });
 
-      const htmlDesgloseFiscal = `
-        <div class="tax-breakdown-card">
-          <div class="tax-breakdown-row"><span>Subtotal Neto (Sin Impuestos):</span><span>$${baseAcumulada.toFixed(2)}</span></div>
-          <div class="tax-breakdown-row"><span>IVA Desglosado (16%):</span><span>$${ivaAcumulado.toFixed(2)}</span></div>
-          <div class="tax-breakdown-row"><span>IEPS Desglosado (8%):</span><span>$${iepsAcumulado.toFixed(2)}</span></div>
-          <div class="tax-breakdown-row total-row"><span>Total Pagado:</span><span>$${c.total.toFixed(2)}</span></div>
-        </div>
-      `;
-
       div.innerHTML = `
         <div class="hist-header">
           <div>
@@ -761,7 +786,6 @@ function inicializarListeners() {
           <summary class="summary-btn">Ver ${c.detalles.length} productos</summary>
           <div style="margin-top: 10px; background: var(--bg); padding: 12px; border-radius: var(--radius-sm);">
             ${htmlCategorias}
-            ${htmlDesgloseFiscal}
           </div>
         </details>`;
       cont.appendChild(div);
@@ -774,35 +798,69 @@ window.actualizarTextoDetails = (el, totalProductos) => {
   summary.textContent = el.open ? `Ocultar ${totalProductos} productos` : `Ver ${totalProductos} productos`;
 };
 
-// CRUD ACCIONES
+// PESTAÑA LISTA (POR RECORDAR)
+document.getElementById('btnAgregarRecordatorio').addEventListener('click', async () => {
+  const nombre = document.getElementById('nombreLista').value.trim();
+  const categoria = document.getElementById('categoriaLista').value;
+
+  if (!nombre) return alert("Escribe qué producto deseas recordar.");
+
+  await addDoc(colPorRecordar, {
+    nombre, categoria, userId: usuarioActual.uid, creado: Date.now()
+  });
+
+  document.getElementById('nombreLista').value = '';
+});
+
+window.eliminarRecordatorio = async (id) => {
+  await deleteDoc(doc(db, "por_recordar", id));
+};
+
+window.moverAlCarrito = async (idRecordatorio, nombre, categoria) => {
+  const enDiccionario = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+  const precioDefecto = enDiccionario ? enDiccionario.precio : 0;
+
+  await addDoc(colLista, {
+    nombre, categoria, precio: precioDefecto, piezas: 1,
+    iva: false, ieps: false, completado: false, creado: Date.now(), userId: usuarioActual.uid
+  });
+
+  await deleteDoc(doc(db, "por_recordar", idRecordatorio));
+  cambiarTab('carrito');
+};
+
+// CRUD CARRITO
 document.getElementById('btnAgregar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const precio = parseFloat(document.getElementById('precio').value);
   const piezas = parseInt(document.getElementById('piezas').value);
   const categoria = document.getElementById('categoria').value;
-  const iva = document.getElementById('chkIva').checked;
-  const ieps = document.getElementById('chkIeps').checked;
 
   if (!nombre || isNaN(precio) || isNaN(piezas)) return alert("Revisa el nombre, precio y cantidad.");
   
   if (idEdicion) {
-    await updateDoc(doc(db, "lista_actual", idEdicion), { nombre, precio, piezas, categoria, iva, ieps });
-  } else {
-    await addDoc(colLista, { 
-      nombre, precio, piezas, categoria, iva, ieps, 
-      completado: false, creado: Date.now(), userId: usuarioActual.uid 
+    await updateDoc(doc(db, "lista_actual", idEdicion), { 
+      nombre, precio, piezas, categoria, iva: false, ieps: false 
     });
+  } else {
+    const docRefData = { 
+      nombre, precio, piezas, categoria, iva: false, ieps: false, 
+      completado: false, creado: Date.now(), userId: usuarioActual.uid 
+    };
+    if (codigoEscaneadoTemporal) docRefData.codigo = codigoEscaneadoTemporal;
+
+    await addDoc(colLista, docRefData);
     
     const productoExistente = productosDiccionario.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 
     if (!productoExistente) { 
-      const nuevoRegistroDiccionario = { nombre, precio, categoria, iva, ieps };
+      const nuevoRegistroDiccionario = { nombre, precio, categoria, iva: false, ieps: false };
       if (codigoEscaneadoTemporal) nuevoRegistroDiccionario.codigo = codigoEscaneadoTemporal;
       await addDoc(colDiccionario, nuevoRegistroDiccionario); 
     } else {
       const snapDic = await getDocs(query(colDiccionario, where("nombre", "==", nombre)));
       if (!snapDic.empty) {
-        const updateData = { precio, categoria, iva, ieps };
+        const updateData = { precio, categoria, iva: false, ieps: false };
         if (codigoEscaneadoTemporal) updateData.codigo = codigoEscaneadoTemporal;
         await updateDoc(doc(db, "diccionario_productos", snapDic.docs[0].id), updateData);
       }
@@ -811,46 +869,36 @@ document.getElementById('btnAgregar').addEventListener('click', async () => {
   limpiarInputs();
 });
 
-function crearItemEl(item, completado) {
+function crearItemEl(item) {
   const subtotal = item.precio * item.piezas;
   const catNorm = normalizarCategoria(item.categoria);
   const emoji = catEmojis[catNorm] || '📦';
-  
-  let taxText = '';
-  if (item.iva && item.ieps) taxText = '<span class="tax-badge">IVA + IEPS</span>';
-  else if (item.iva) taxText = '<span class="tax-badge">IVA</span>';
-  else if (item.ieps) taxText = '<span class="tax-badge">IEPS</span>';
 
   const div = document.createElement('div');
-  div.className = 'item-card' + (completado ? ' done-item' : '');
+  div.className = 'item-card';
   div.innerHTML = `
-    <button class="check-btn ${completado ? 'checked' : ''}" onclick="toggleCompletado('${item.id}', ${completado})">${completado ? '✓' : ''}</button>
-    <div class="item-info" onclick="${!completado ? `prepararEdicion('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', ${item.precio}, ${item.piezas}, '${catNorm}', ${!!item.iva}, ${!!item.ieps})` : ''}">
-      <div class="item-name ${completado ? 'tachado' : ''}">${emoji} ${item.nombre}</div>
+    <div class="item-info" onclick="prepararEdicion('${item.id}', '${item.nombre.replace(/'/g, "\\'")}', ${item.precio}, ${item.piezas}, '${catNorm}')">
+      <div class="item-name">${emoji} ${item.nombre}</div>
       <div class="item-sub">
         <span>${item.piezas} pza${item.piezas > 1 ? 's' : ''} × $${item.precio.toFixed(2)}</span>
         <span class="cat-badge cat-${catNorm}">${catNames[catNorm] || 'Otro'}</span>
-        ${taxText}
       </div>
     </div>
-    <span class="item-price ${completado ? 'tachado' : ''}">$${subtotal.toFixed(2)}</span>
+    <span class="item-price">$${subtotal.toFixed(2)}</span>
     <button class="del-btn" onclick="eliminarItem('${item.id}')">🗑️</button>
   `;
   return div;
 }
 
-window.toggleCompletado = async (id, estadoActual) => { await updateDoc(doc(db, "lista_actual", id), { completado: !estadoActual }); };
-window.eliminarItem = async (id) => { if (confirm('¿Eliminar producto?')) await deleteDoc(doc(db, "lista_actual", id)); };
+window.eliminarItem = async (id) => { if (confirm('¿Eliminar del carrito?')) await deleteDoc(doc(db, "lista_actual", id)); };
 window.eliminarHistorial = async (id) => { if (confirm('¿Eliminar del historial?')) await deleteDoc(doc(db, "historial", id)); };
 
-window.prepararEdicion = (id, nombre, precio, piezas, categoria, iva, ieps) => {
+window.prepararEdicion = (id, nombre, precio, piezas, categoria) => {
   idEdicion = id; 
   document.getElementById('nombre').value = nombre; 
   document.getElementById('precio').value = precio;
   document.getElementById('piezas').value = piezas; 
   document.getElementById('categoria').value = normalizarCategoria(categoria);
-  document.getElementById('chkIva').checked = iva;
-  document.getElementById('chkIeps').checked = ieps;
   document.getElementById('btnAgregar').textContent = '✏️ Actualizar'; 
   document.getElementById('btnCancelar').style.display = 'block';
 };
@@ -858,8 +906,8 @@ document.getElementById('btnCancelar').addEventListener('click', limpiarInputs);
 
 document.getElementById('btnGuardarCompra').addEventListener('click', async () => {
   const snap = await getDocs(query(colLista, where("userId", "==", usuarioActual.uid)));
-  if (snap.empty) return alert('Tu lista está vacía.');
-  if (!confirm('¿Guardar esta compra en tu historial?')) return;
+  if (snap.empty) return alert('Tu carrito está vacío.');
+  if (!confirm('¿Finalizar y guardar esta compra en tu historial?')) return;
   
   const items = snap.docs.map(d => d.data());
   const total = items.reduce((acc, curr) => acc + (curr.precio * curr.piezas), 0);
@@ -877,6 +925,7 @@ document.getElementById('btnGuardarCompra').addEventListener('click', async () =
 
   limpiarInputs();
   alert('¡Compra guardada con éxito! El presupuesto se ha reiniciado a $0.');
+  cambiarTab('historial');
 });
 </script>
 </body>
