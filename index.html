@@ -139,7 +139,7 @@
   .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .item-price { font-size: 15px; font-weight: 900; }
   .del-btn { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; }
-  .btn-move-cart { background: var(--green-light); color: var(--green); border: 1px solid var(--green); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+  .btn-move-cart { background: var(--green-light); color: var(--green); border: 1px solid var(--green); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; margin-right: 6px; }
   
   .sugerencias-box { position: absolute; background: var(--card); border: 1px solid var(--card-border); width: calc(100% - 36px); z-index: 40; border-radius: var(--radius-sm); max-height: 150px; overflow-y: auto; box-shadow: var(--shadow); display: none; top: 110px; }
   .sugerencia-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid var(--card-border); }
@@ -177,7 +177,7 @@
 <body>
 <div class="app">
 
-  <!-- SECCIÓN DE AUTENTICACIÓN -->
+  <!-- SECCIÓN DE AUTENTICACIÓN ESTANDARIZADA -->
   <div id="authSeccion" class="main">
     <div class="auth-container">
       <div class="form-card" style="padding: 24px 20px;">
@@ -206,7 +206,7 @@
       <div class="header-top">
         <div class="app-name">🛒 Súper<span>Familiar</span></div>
         <div class="budget-chip" id="budgetChip" onclick="abrirModalPresupuesto()">
-          Definir presupuesto
+          Sin definir
         </div>
         <button id="btnLogout" class="btn-logout">Salir</button>
       </div>
@@ -239,7 +239,8 @@
             <option value="congelados">🥶 Congelados</option>
             <option value="otro">📦 Otro</option>
           </select>
-          <button class="btn-primary" id="btnAgregarRecordatorio">+ Recordar compra</button>
+          <!-- BOTÓN CORREGIDO -->
+          <button type="button" class="btn-primary" id="btnAgregarRecordatorio">+ Agregar artículo</button>
         </div>
 
         <div class="section-label">por recordar</div>
@@ -292,8 +293,8 @@
             <option value="congelados">🥶 Congelados</option>
             <option value="otro">📦 Otro</option>
           </select>
-          <button class="btn-primary" id="btnAgregar">+ Agregar al Carrito</button>
-          <button class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
+          <button type="button" class="btn-primary" id="btnAgregar">+ Agregar al Carrito</button>
+          <button type="button" class="btn-cancel" id="btnCancelar">✕ Cancelar edición</button>
         </div>
    
         <div id="pendientesWrap">
@@ -309,7 +310,7 @@
     </div>
 
     <!-- BARRA INFERIOR DE COMPRA -->
-    <div class="bottom-bar" id="barraInferior">
+    <div class="bottom-bar" id="barraInferior" class="hidden">
       <div>
         <div class="total-label">Total del Carrito</div>
         <div class="total-amount" id="totalCuenta">$0.00</div>
@@ -359,8 +360,10 @@ let idEdicion = null;
 let usuarioActual = null;
 let productosDiccionario = [];
 let productosEnCarritoMemoria = [];
-let presupuesto = parseFloat(localStorage.getItem('presupuesto')) || 0;
+// Inicializamos en 0, lo cargaremos específicamente por usuario después de loguearse
+let presupuesto = 0; 
 let codigoEscaneadoTemporal = null;
+let procesandoEscaneo = false; // Candado para evitar duplicidad de escaneos
 
 const catEmojis = { 
   abarrotes:'🥫', frutas_verduras:'🍎', lacteos:'🥛', carnes:'🥩', 
@@ -382,7 +385,7 @@ function normalizarCategoria(catRaw) {
   return catNames[catMapped] ? catMapped : 'otro';
 }
 
-// GENERADOR DE SONIDO (BEEP) VÍA WEB AUDIO API
+// BEEP SONORO MÁS AGUDO (2500 Hz)
 function reproducirBeep() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -390,20 +393,20 @@ function reproducirBeep() {
     const gain = audioCtx.createGain();
     
     osc.type = "sine";
-    osc.frequency.setValueAtTime(800, audioCtx.currentTime); // 800 Hz
+    osc.frequency.setValueAtTime(2500, audioCtx.currentTime); // Subimos la frecuencia a 2500 Hz para simular láser
     gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.1); // Duración de 100ms
+    osc.stop(audioCtx.currentTime + 0.1); 
   } catch (e) {
     console.warn("No se pudo emitir el tono de beep:", e);
   }
 }
 
-// CORRECCIÓN DE AUTENTICACIÓN GOOGLE Y EMAIL
+// AUTENTICACIÓN
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('authEmail').value.trim();
   const pass = document.getElementById('authPassword').value;
@@ -412,11 +415,7 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 });
 
 document.getElementById('btnGoogle').addEventListener('click', async () => {
-  try { 
-    await signInWithPopup(auth, googleProvider); 
-  } catch (e) { 
-    alert("Error al conectar con Google: " + e.message); 
-  }
+  try { await signInWithPopup(auth, googleProvider); } catch (e) { alert("Error al conectar con Google: " + e.message); }
 });
 
 document.getElementById('btnRegistro').addEventListener('click', async () => {
@@ -434,6 +433,10 @@ function inicializarAutenticacion() {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       usuarioActual = user;
+      
+      // CARGAMOS EL PRESUPUESTO ESPECÍFICO DEL USUARIO
+      presupuesto = parseFloat(localStorage.getItem(`presupuesto_${usuarioActual.uid}`)) || 0;
+      
       document.getElementById('authSeccion').classList.add('hidden');
       document.getElementById('appContenido').classList.remove('hidden');
       inicializarListeners();
@@ -448,7 +451,7 @@ function inicializarAutenticacion() {
 }
 inicializarAutenticacion();
 
-// NAVEGACIÓN ENTRE LAS 3 PESTAÑAS
+// NAVEGACIÓN
 window.cambiarTab = (tab) => {
   const esLista = tab === 'lista';
   const esCarrito = tab === 'carrito';
@@ -458,7 +461,6 @@ window.cambiarTab = (tab) => {
   document.getElementById('seccionCarrito').classList.toggle('hidden', !esCarrito);
   document.getElementById('seccionHistorial').classList.toggle('hidden', !esHistorial);
   
-  // La barra inferior sólo se muestra en el Carrito de compra
   document.getElementById('barraInferior').classList.toggle('hidden', !esCarrito);
 
   document.getElementById('tabLista').classList.toggle('active', esLista);
@@ -466,7 +468,7 @@ window.cambiarTab = (tab) => {
   document.getElementById('tabHistorial').classList.toggle('active', esHistorial);
 };
 
-// PRESUPUESTO
+// GESTIÓN DE PRESUPUESTO MULTI-CUENTA
 function actualizarBotonPresupuestoUI() {
   const chip = document.getElementById('budgetChip');
   if (presupuesto > 0) {
@@ -485,7 +487,8 @@ window.guardarPresupuesto = () => {
   const val = parseFloat(document.getElementById('inputPresupuesto').value);
   if (!isNaN(val) && val > 0) {
     presupuesto = val;
-    localStorage.setItem('presupuesto', val);
+    // GUARDADO SEGURO POR USUARIO
+    localStorage.setItem(`presupuesto_${usuarioActual.uid}`, val);
     const totalActual = parseFloat(document.getElementById('totalCuenta').innerText.replace('$','')) || 0;
     actualizarBudgetUI(totalActual);
   }
@@ -532,7 +535,6 @@ async function cargarDiccionario() {
   onSnapshot(colDiccionario, (snap) => { productosDiccionario = snap.docs.map(d => d.data()); });
 }
 
-// Sugerencias para Pestaña Lista
 document.getElementById('nombreLista').addEventListener('input', (e) => {
   configurarAutocompletado(e.target.value, 'sugerenciasLista', (p) => {
     document.getElementById('nombreLista').value = p.nombre;
@@ -540,7 +542,6 @@ document.getElementById('nombreLista').addEventListener('input', (e) => {
   });
 });
 
-// Sugerencias para Pestaña Carrito
 document.getElementById('nombre').addEventListener('input', (e) => {
   configurarAutocompletado(e.target.value, 'sugerencias', (p) => {
     document.getElementById('nombre').value = p.nombre;
@@ -581,7 +582,7 @@ document.addEventListener('click', (e) => {
   });
 });
 
-// ESCÁNER INTELIGENTE
+// ESCÁNER CON CANDADO ANTI-DUPLICADOS
 let html5QrCode = null;
 document.getElementById('btnEscanear').addEventListener('click', async () => {
   if (typeof window.Html5Qrcode === 'undefined') return alert("Cargando lector...");
@@ -592,10 +593,12 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
     html5QrCode = new window.Html5Qrcode("reader");
 
     const qrCodeSuccessCallback = async (decodedText) => {
-      // 1. REPRODUCIR BEEP SONORO
+      // PREVENCIÓN DE DUPLICADOS: Si ya está procesando un escaneo, ignorar
+      if (procesandoEscaneo) return;
+      procesandoEscaneo = true;
+
       reproducirBeep();
 
-      // 2. ¿YA EXISTE EN EL CARRITO PENDIENTE? -> SUMAR 1 PIEZA DIRECTAMENTE
       const existenteEnCarrito = productosEnCarritoMemoria.find(p => p.codigo === decodedText);
       
       if (existenteEnCarrito) {
@@ -606,7 +609,6 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         return;
       }
 
-      // 3. ¿EXISTE EN EL DICCIONARIO BASE? -> AGREGAR DIRECTO A LA LISTA DE COMPRA CON 1 PIEZA
       const encontradoDiccionario = productosDiccionario.find(p => p.codigo === decodedText);
       
       if (encontradoDiccionario) {
@@ -625,7 +627,6 @@ document.getElementById('btnEscanear').addEventListener('click', async () => {
         return;
       }
 
-      // 4. SI ES UN CÓDIGO TOTALMENTE NUEVO -> PERMITIR RELLENAR PARA DAR DE ALTA
       codigoEscaneadoTemporal = decodedText;
       const badge = document.getElementById('badgeCodigoEscaneado');
       badge.textContent = `📷 Código: ${decodedText} (Completa los datos para darlo de alta)`;
@@ -656,6 +657,8 @@ async function detenerEscaner() {
     html5QrCode = null;
   }
   reader.style.display = 'none';
+  // LIBERAR CANDADO DE ESCANEO
+  procesandoEscaneo = false;
 }
 
 const limpiarInputs = () => {
@@ -671,7 +674,7 @@ const limpiarInputs = () => {
   document.getElementById('sugerencias').style.display = 'none';
 };
 
-// LISTENERS Y FIRESTORE
+// LISTENERS
 function inicializarListeners() {
   // A) LISTA POR RECORDAR
   const qRecordar = query(colPorRecordar, where("userId", "==", usuarioActual.uid));
@@ -798,18 +801,21 @@ window.actualizarTextoDetails = (el, totalProductos) => {
   summary.textContent = el.open ? `Ocultar ${totalProductos} productos` : `Ver ${totalProductos} productos`;
 };
 
-// PESTAÑA LISTA (POR RECORDAR)
+// FUNCIONES: PESTAÑA LISTA POR RECORDAR
 document.getElementById('btnAgregarRecordatorio').addEventListener('click', async () => {
   const nombre = document.getElementById('nombreLista').value.trim();
   const categoria = document.getElementById('categoriaLista').value;
 
   if (!nombre) return alert("Escribe qué producto deseas recordar.");
 
-  await addDoc(colPorRecordar, {
-    nombre, categoria, userId: usuarioActual.uid, creado: Date.now()
-  });
-
-  document.getElementById('nombreLista').value = '';
+  try {
+    await addDoc(colPorRecordar, {
+      nombre, categoria, userId: usuarioActual.uid, creado: Date.now()
+    });
+    document.getElementById('nombreLista').value = '';
+  } catch (error) {
+    alert("Error al agregar recordatorio: " + error.message);
+  }
 });
 
 window.eliminarRecordatorio = async (id) => {
@@ -919,12 +925,14 @@ document.getElementById('btnGuardarCompra').addEventListener('click', async () =
   
   await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "lista_actual", d.id))));
   
+  // REINICIO EXPLÍCITO A "SIN DEFINIR"
   presupuesto = 0;
-  localStorage.removeItem('presupuesto');
+  localStorage.removeItem(`presupuesto_${usuarioActual.uid}`);
   actualizarBudgetUI(0);
+  actualizarBotonPresupuestoUI();
 
   limpiarInputs();
-  alert('¡Compra guardada con éxito! El presupuesto se ha reiniciado a $0.');
+  alert('¡Compra guardada con éxito! El presupuesto se ha reiniciado a "Sin definir".');
   cambiarTab('historial');
 });
 </script>
