@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tombonmonudg.superfamiliar",
+      "sha256_cert_fingerprints": [
+        "9D:F0:ED:80:EE:71:C6:76:80:22:0C:39:CE:D0:84:48:1F:97:02:52:B1:DA:28:C6:03:1A:C3:EE:B6:A1:96:18"
+      ]
+    }
+  }
+]
