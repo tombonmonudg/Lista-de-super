@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#0E5A3D"/>
+
+  <!-- Asa de la bolsa -->
+  <path d="M196 190v-22a64 64 0 0 1 128 0v22" fill="none" stroke="#F6F3E9" stroke-width="26" stroke-linecap="round"/>
+
+  <!-- Bolsa -->
+  <path d="M138 168h236l-17 213a30 30 0 0 1-30 27H185a30 30 0 0 1-30-27Z" fill="#F6F3E9"/>
+
+  <!-- Jitomate -->
+  <circle cx="256" cy="310" r="58" fill="#D6432A"/>
+  <path d="M256 252c-14-15-33-18-48-12 6 13 20 21 35 22-7 8-8 18-3 26 11-6 17-17 16-29 9 9 20 12 32 9-3-13-15-23-27-24 10-6 16-15 17-27-12 2-22 10-26 21Z" fill="#0E5A3D"/>
+</svg>
